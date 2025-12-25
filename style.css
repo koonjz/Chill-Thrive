@@ -260,3 +260,11 @@ form textarea:focus{
   outline:none;
   border-color:var(--blue);
 }
+select{
+  width:100%;
+  padding:0.8rem;
+  margin-bottom:1rem;
+  border-radius:10px;
+  border:1px solid #cbd5e1;
+}
+
