@@ -3,6 +3,10 @@ const firebaseConfig = {
   apiKey: "AIzaSyA3Ma9RS54N7nnnoSkmrp5kcjv_c-IN1eM",
   authDomain: "chill-thrive.firebaseapp.com",
   projectId: "chill-thrive",
+  storageBucket: "chill-thrive.firebasestorage.app",
+  messagingSenderId: "883272857594",
+  appId: "1:883272857594:web:840ccf707e7f073c735643",
+  measurementId: "G-CJP105Q5Z3"
 };
 
 // Initialize Firebase
