@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Book a Session | Chill Thrive</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+
+<header>
+  <nav class="container nav">
+    <h2 class="logo">Chill Thrive</h2>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="booking.html">Booking</a></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <h1>Book Your Recovery Session</h1>
+    <p>Select service, time and confirm your booking.</p>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="card">
+
+    <form id="bookingForm">
+
+      <!-- Service -->
+      <label>Service / Combo</label>
+      <select id="service" required>
+        <option value="">Select Service</option>
+        <option>Ice Bath Therapy</option>
+        <option>Jacuzzi Therapy</option>
+        <option>Steam Bath</option>
+        <option>Ice + Steam Combo</option>
+        <option>Full Recovery Combo</option>
+      </select>
+
+      <!-- Date -->
+      <label>Date</label>
+      <input type="date" id="date" required>
+
+      <!-- Time Slot -->
+      <label>Time Slot</label>
+      <select id="time" required>
+        <option value="">Select Time</option>
+        <option>07:00 – 08:00</option>
+        <option>08:00 – 09:00</option>
+        <option>18:00 – 19:00</option>
+        <option>19:00 – 20:00</option>
+      </select>
+
+      <!-- User Details -->
+      <label>Name</label>
+      <input type="text" id="name" required>
+
+      <label>Phone</label>
+      <input type="tel" id="phone" required>
+
+      <label>Email</label>
+      <input type="email" id="email" required>
+
+      <!-- Payment -->
+      <p><strong>Payment:</strong> Cash at Venue / QR on arrival</p>
+
+      <button class="btn" type="submit">Confirm Booking</button>
+
+    </form>
+
+  </div>
+</section>
+
+<footer>
+  <div class="container footer">
+    <p>© 2025 Chill Thrive</p>
+  </div>
+</footer>
+
+<!-- Firebase + JS -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/booking.js"></script>
+
+</body>
+</html>
