@@ -75,3 +75,39 @@ if (contactForm) {
     });
   });
 }
+// ================= TESTIMONIALS LOGIC =================
+const textContainer = document.getElementById("textTestimonials");
+const videoContainer = document.getElementById("videoTestimonials");
+
+if (textContainer || videoContainer) {
+  db.collection("testimonials")
+    .where("visible", "==", true)
+    .get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        const data = doc.data();
+
+        if (data.type === "text" && textContainer) {
+          textContainer.innerHTML += `
+            <div class="card">
+              <p>"${data.feedback}"</p>
+              <strong>${data.name}</strong><br>
+              ⭐ ${data.rating}/5
+            </div>
+          `;
+        }
+
+        if (data.type === "video" && videoContainer) {
+          videoContainer.innerHTML += `
+            <div class="card">
+              <iframe width="100%" height="200"
+                src="${data.videoUrl}"
+                frameborder="0"
+                allowfullscreen></iframe>
+              <strong>${data.name}</strong>
+            </div>
+          `;
+        }
+      });
+    });
+}
