@@ -1,7 +1,6 @@
 // ================= FIREBASE INIT =================
-// ⚠️ IMPORTANT: Paste your ACTUAL keys here (from your previous message)
 const firebaseConfig = {
-  apiKey: "AIzaSyA3Ma9RS54N7nnnoSkmrp5kcjv_c-IN1eM", // I put your key back in for you
+  apiKey: "AIzaSyA3Ma9RS54N7nnnoSkmrp5kcjv_c-IN1eM",
   authDomain: "chill-thrive.firebaseapp.com",
   projectId: "chill-thrive",
 };
