@@ -63,7 +63,7 @@ if (contactForm) {
     // It is safer to use IDs here too, but your array method might work if order never changes
     db.collection("messages").add({
       name: document.getElementById("contact-name") ? document.getElementById("contact-name").value : this[0].value,
-      email: document.getElementById("contact-email") ? document.getElementById("contact-email").value : this[1].value,
+      phone: document.getElementById("contact-phone") ? document.getElementById("contact-phone").value : this[1].value,
       message: document.getElementById("contact-msg") ? document.getElementById("contact-msg").value : this[2].value,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
