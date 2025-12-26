@@ -60,7 +60,7 @@
     <div class="card">
       <h3>Send a Message</h3>
 
-      <form>
+      <form id="contactForm">
         <input type="text" placeholder="Your Name" required>
         <input type="tel" placeholder="Your Phone Number" required>
         <textarea placeholder="Your Message" rows="5"></textarea>
@@ -96,8 +96,25 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="./firebase.js"></script>
 
+<script>
+document.getElementById("contactForm").addEventListener("submit", function(e){
+  e.preventDefault();
+
+  db.collection("messages").add({
+    name: this[0].value,
+    email: this[1].value,
+    message: this[2].value,
+    createdAt: new Date()
+  }).then(()=>{
+    alert("Message sent successfully!");
+    this.reset();
+  });
+});
+</script>
+
 </body>
 </html>
+
 
 
 
