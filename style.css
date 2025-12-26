@@ -268,3 +268,24 @@ select{
   border:1px solid #cbd5e1;
 }
 
+.video-card{
+  position:relative;
+  cursor:pointer;
+  text-align:center;
+}
+
+.video-card img{
+  border-radius:12px;
+}
+
+.play-btn{
+  position:absolute;
+  top:45%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:rgba(0,0,0,0.6);
+  color:white;
+  font-size:2rem;
+  padding:10px 16px;
+  border-radius:50%;
+}
