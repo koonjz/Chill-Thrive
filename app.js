@@ -99,15 +99,14 @@ if (textContainer || videoContainer) {
 
         if (data.type === "video" && videoContainer) {
           videoContainer.innerHTML += `
-            <div class="card">
-              <iframe width="100%" height="200"
-                src="${data.videoUrl}"
-                frameborder="0"
-                allowfullscreen></iframe>
+            <div class="card video-card" onclick="this.innerHTML='<iframe width=100% height=200 src=${data.videoUrl} frameborder=0 allowfullscreen></iframe>'">
+              <img src="${data.thumbnail}" alt="Video testimonial thumbnail">
+              <div class="play-btn">▶</div>
               <strong>${data.name}</strong>
             </div>
           `;
         }
+
       });
     });
 }
