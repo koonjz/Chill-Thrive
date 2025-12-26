@@ -96,27 +96,5 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="./app.js"></script>
 
-<script>
-document.getElementById("contactForm").addEventListener("submit", function(e){
-  e.preventDefault();
-
-  db.collection("messages").add({
-    name: this[0].value,
-    email: this[1].value,
-    message: this[2].value,
-    createdAt: new Date()
-  }).then(()=>{
-    alert("Message sent successfully!");
-    this.reset();
-  });
-});
-</script>
-
 </body>
 </html>
-
-
-
-
-
-
