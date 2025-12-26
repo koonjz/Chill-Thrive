@@ -173,6 +173,12 @@ header{
   margin-bottom:0.5rem;
 }
 
+.services a.card{
+  color:inherit;
+  text-decoration:none;
+  display:block;
+}
+
 /* ================= CTA ================= */
 .cta{
   background:var(--blue);
@@ -289,3 +295,4 @@ select{
   padding:10px 16px;
   border-radius:50%;
 }
+
