@@ -86,7 +86,7 @@ header{
 
 /* ================= HERO ================= */
 .hero{
-  /*background:linear-gradient(to right,var(--blue),var(--blue-dark));*/
+  background:linear-gradient(to right,var(--blue),var(--blue-dark));
   color:var(--white);
   text-align:center;
   padding:6rem 1.5rem;
@@ -369,6 +369,7 @@ select{
   padding:10px 16px;
   border-radius:50%;
 }
+
 
 
 
