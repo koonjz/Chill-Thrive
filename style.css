@@ -212,6 +212,11 @@ a.card{
   font-weight:500;
 }
 
+.link-tier{
+  text-decoration:none;
+  color:inherit;
+}
+
 /* ================= WHY ================= */
 .why{
   background:var(--light-blue);
@@ -344,6 +349,7 @@ select{
   padding:10px 16px;
   border-radius:50%;
 }
+
 
 
 
