@@ -137,6 +137,7 @@ header{
 .hero-bg{
   background:url("https://i.ibb.co/6J19nH52/icebath.jpg") center/cover no-repeat;
   position:relative;
+  color:white;
 }
 
 .hero-bg::before{
@@ -369,6 +370,7 @@ select{
   padding:10px 16px;
   border-radius:50%;
 }
+
 
 
 
