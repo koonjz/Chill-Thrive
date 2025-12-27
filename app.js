@@ -11,6 +11,62 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
+// ================= SLOT CAPACITY LOGIC =================
+const dateInput = document.getElementById("date");
+const timeSelect = document.getElementById("time");
+
+if (dateInput && timeSelect) {
+
+  const defaultSlots = [
+    "07:00 – 10:00",
+    "10:00 – 13:00",
+    "15:00 – 18:00",
+    "18:00 – 21:00"
+  ];
+
+  dateInput.addEventListener("change", () => {
+    loadSlots(dateInput.value);
+  });
+
+  function loadSlots(selectedDate) {
+    timeSelect.innerHTML = `<option value="">Select Time</option>`;
+
+    let availableCount = 0;
+
+    defaultSlots.forEach(slot => {
+      const docId = `${selectedDate}_${slot}`;
+
+      db.collection("timeSlots").doc(docId).get().then(doc => {
+
+        let capacity = 5;
+        let booked = 0;
+
+        if (doc.exists) {
+          capacity = doc.data().capacity;
+          booked = doc.data().booked;
+        }
+
+        if (booked < capacity) {
+          availableCount++;
+          const option = document.createElement("option");
+          option.value = slot;
+          option.textContent = `${slot} (${capacity - booked} slots left)`;
+          timeSelect.appendChild(option);
+        }
+
+        // ❌ All slots full → block date
+        if (availableCount === 0 && slot === defaultSlots[defaultSlots.length - 1]) {
+          dateInput.setCustomValidity("No slots available on this date");
+          dateInput.reportValidity();
+        } else {
+          dateInput.setCustomValidity("");
+        }
+
+      });
+    });
+  }
+}
+
 // ================= BOOKING PAGE LOGIC =================
 const bookingForm = document.getElementById("bookingForm");
 
@@ -73,6 +129,17 @@ if (serviceSelect && durationSelect) {
       .then(() => {
         alert("Booking confirmed! You will receive confirmation shortly.");
         bookingForm.reset();
+        const selectedDate = document.getElementById("date").value;
+const selectedTime = document.getElementById("time").value;
+
+const slotId = `${selectedDate}_${selectedTime}`;
+
+db.collection("timeSlots").doc(slotId).set({
+  date: selectedDate,
+  time: selectedTime,
+  capacity: 5,
+  booked: firebase.firestore.FieldValue.increment(1)
+}, { merge: true });
       })
       .catch((error) => {
         console.error("Error:", error);
