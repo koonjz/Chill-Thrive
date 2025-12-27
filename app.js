@@ -11,7 +11,7 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
-// ================= SLOT CAPACITY LOGIC (FIXED) =================
+// ================= SLOT CAPACITY LOGIC (FAIL-SAFE) =================
 const dateInput = document.getElementById("date");
 const timeSelect = document.getElementById("time");
 
@@ -25,25 +25,31 @@ if (dateInput && timeSelect) {
   ];
 
   dateInput.addEventListener("change", async () => {
-    timeSelect.innerHTML = `<option value="">Loading slots...</option>`;
 
+    timeSelect.innerHTML = `<option value="">Select Time</option>`;
     const selectedDate = dateInput.value;
-    let availableSlots = 0;
+
+    let available = false;
 
     for (const slot of defaultSlots) {
+
       const docId = `${selectedDate}_${slot}`;
-      const doc = await db.collection("timeSlots").doc(docId).get();
 
       let capacity = 5;
       let booked = 0;
 
-      if (doc.exists) {
-        capacity = doc.data().capacity;
-        booked = doc.data().booked;
+      try {
+        const doc = await db.collection("timeSlots").doc(docId).get();
+        if (doc.exists) {
+          capacity = doc.data().capacity;
+          booked = doc.data().booked;
+        }
+      } catch (err) {
+        console.error("Firestore error:", err);
       }
 
       if (booked < capacity) {
-        availableSlots++;
+        available = true;
         const option = document.createElement("option");
         option.value = slot;
         option.textContent = `${slot} (${capacity - booked} slots left)`;
@@ -51,14 +57,12 @@ if (dateInput && timeSelect) {
       }
     }
 
-    // Clear loading text
-    if (availableSlots > 0) {
-      timeSelect.querySelector("option[value='']")?.remove();
-      dateInput.setCustomValidity("");
-    } else {
+    if (!available) {
       timeSelect.innerHTML = `<option value="">No slots available</option>`;
       dateInput.setCustomValidity("No slots available on this date");
       dateInput.reportValidity();
+    } else {
+      dateInput.setCustomValidity("");
     }
   });
 }
