@@ -36,13 +36,15 @@ if (durationSelect && durationParam) {
 if (serviceSelect && durationSelect) {
 
   function toggleDuration() {
-    if (serviceSelect.value === "Ice Bath Therapy") {
-      durationSelect.parentElement.style.display = "block";
-    } else {
-      durationSelect.parentElement.style.display = "none";
-      durationSelect.value = "";
-    }
+  if (serviceSelect.value === "Ice Bath Therapy") {
+    durationSelect.parentElement.style.display = "block";
+    durationSelect.required = true;
+  } else {
+    durationSelect.parentElement.style.display = "none";
+    durationSelect.required = false;
+    durationSelect.value = "";
   }
+}
 
   toggleDuration(); // on page load
   serviceSelect.addEventListener("change", toggleDuration);
