@@ -32,20 +32,23 @@
   </nav>
 </header>
 
+<!-- HERO -->
 <section class="hero">
   <div class="container">
     <h1>Book Your Recovery Session</h1>
-    <p>Select service, time and confirm your booking.</p>
+    <p>Select service, date & time, and confirm your booking.</p>
   </div>
 </section>
 
+<!-- BOOKING FORM -->
 <section class="container section">
   <div class="card">
 
     <form id="bookingForm">
 
-      <!-- Service -->
-      <label>Service / Combo</label>
+      <!-- STEP 1: SERVICE -->
+      <h3>1. Select Service / Combo</h3>
+      <label>Service</label>
       <select id="service" required>
         <option value="">Select Service</option>
         <option>Ice Bath Therapy</option>
@@ -56,29 +59,39 @@
         <option>Full Recovery Combo (Ice + Steam + Jacuzzi)</option>
       </select>
 
+      <!-- Duration (Ice Bath only) -->
       <div id="duration-wrapper">
-      <select id="duration">
-        <option value="">Select Duration</option>
-        <option value="30">30 Minutes</option>
-        <option value="60">60 Minutes</option>
-      </select>
+        <label>Duration</label>
+        <select id="duration">
+          <option value="">Select Duration</option>
+          <option value="30">30 Minutes</option>
+          <option value="60">60 Minutes</option>
+        </select>
       </div>
 
-      <!-- Date -->
+      <!-- STEP 2: DATE & TIME -->
+      <h3>2. Select Date & Time Slot</h3>
+
       <label>Date</label>
       <input type="date" id="date" required>
 
-      <!-- Time Slot -->
       <label>Time Slot</label>
       <select id="time" required>
         <option value="">Select Time</option>
+        <!-- Admin can enable/disable these via backend -->
         <option>07:00 – 10:00</option>
         <option>10:00 – 13:00</option>
         <option>15:00 – 18:00</option>
         <option>18:00 – 21:00</option>
       </select>
 
-      <!-- User Details -->
+      <p class="note">
+        * Time slots and dates can be managed by admin (capacity, availability).
+      </p>
+
+      <!-- STEP 3: USER DETAILS -->
+      <h3>3. Enter Your Details</h3>
+
       <label>Name</label>
       <input type="text" id="name" placeholder="Your Name" required>
 
@@ -88,8 +101,18 @@
       <label>Email</label>
       <input type="email" id="email" placeholder="Your Email" required>
 
-      <!-- Payment -->
-      <p><strong>Payment:</strong> Cash at Venue / QR on arrival</p>
+      <!-- STEP 4: PAYMENT -->
+      <h3>4. Payment</h3>
+      <p>
+        Payment can be completed via <strong>Cash at Venue</strong> or
+        <strong>QR Code</strong> provided during visit.
+      </p>
+
+      <!-- STEP 5: CONFIRM -->
+      <h3>5. Booking Confirmation</h3>
+      <p>
+        You will receive a booking confirmation on your <strong>email</strong>.
+      </p>
 
       <button class="btn" type="submit">Confirm Booking</button>
 
