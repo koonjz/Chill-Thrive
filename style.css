@@ -162,6 +162,34 @@ a.card{
   display:block;
 }
 
+.combo-card{
+  position:relative;
+}
+
+.price del{
+  color:#888;
+  margin-right:8px;
+}
+
+.price strong{
+  font-size:1.2rem;
+}
+
+.badge{
+  position:absolute;
+  top:16px;
+  right:16px;
+  background:#2563eb;
+  color:white;
+  padding:6px 12px;
+  font-size:0.75rem;
+  border-radius:20px;
+}
+
+.badge.best{
+  background:#16a34a;
+}
+
 /* ================= WHY ================= */
 .why{
   background:var(--light-blue);
@@ -294,6 +322,7 @@ select{
   padding:10px 16px;
   border-radius:50%;
 }
+
 
 
 
