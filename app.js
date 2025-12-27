@@ -127,20 +127,23 @@ if (serviceSelect && durationSelect) {
 
     db.collection("bookings").add(bookingData)
       .then(() => {
-        alert("Booking confirmed! You will receive confirmation shortly.");
-        bookingForm.reset();
-        const selectedDate = document.getElementById("date").value;
-const selectedTime = document.getElementById("time").value;
 
-const slotId = `${selectedDate}_${selectedTime}`;
+  const selectedDate = document.getElementById("date").value;
+  const selectedTime = document.getElementById("time").value;
 
-db.collection("timeSlots").doc(slotId).set({
-  date: selectedDate,
-  time: selectedTime,
-  capacity: 5,
-  booked: firebase.firestore.FieldValue.increment(1)
-}, { merge: true });
-      })
+  const slotId = `${selectedDate}_${selectedTime}`;
+
+  db.collection("timeSlots").doc(slotId).set({
+    date: selectedDate,
+    time: selectedTime,
+    capacity: 5,
+    booked: firebase.firestore.FieldValue.increment(1)
+  }, { merge: true });
+
+  alert("Booking confirmed! You will receive confirmation shortly.");
+  bookingForm.reset();
+
+})
       .catch((error) => {
         console.error("Error:", error);
         alert("Error submitting booking: " + error.message);
