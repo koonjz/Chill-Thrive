@@ -133,6 +133,24 @@ header{
   background:rgba(255,255,255,0.15);
 }
 
+/* ================= HERO-BACKGROUND ================= */
+.hero-bg{
+  background:url("images/hero-recovery.jpg") center/cover no-repeat;
+  position:relative;
+}
+
+.hero-bg::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+}
+
+.hero-content{
+  position:relative;
+  color:white;
+}
+
 /* ================= SERVICES ================= */
 .services{
   display:grid;
@@ -351,6 +369,7 @@ select{
   padding:10px 16px;
   border-radius:50%;
 }
+
 
 
 
