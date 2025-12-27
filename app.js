@@ -15,13 +15,38 @@ const db = firebase.firestore();
 const bookingForm = document.getElementById("bookingForm");
 
 if (bookingForm) {
-  // Auto-fill service from URL
-  const params = new URLSearchParams(window.location.search);
-  const selectedService = params.get("service");
-  if (selectedService) {
-    const serviceSelect = document.getElementById("service");
-    if(serviceSelect) serviceSelect.value = selectedService;
+  // ===== Auto-select service & duration from URL =====
+const params = new URLSearchParams(window.location.search);
+
+const serviceParam = params.get("service");
+const durationParam = params.get("duration");
+
+const serviceSelect = document.getElementById("service");
+const durationSelect = document.getElementById("duration");
+
+if (serviceSelect && serviceParam) {
+  serviceSelect.value = serviceParam;
+}
+
+if (durationSelect && durationParam) {
+  durationSelect.value = durationParam;
+}
+
+// ===== Show duration only for Ice Bath Therapy =====
+if (serviceSelect && durationSelect) {
+
+  function toggleDuration() {
+    if (serviceSelect.value === "Ice Bath Therapy") {
+      durationSelect.parentElement.style.display = "block";
+    } else {
+      durationSelect.parentElement.style.display = "none";
+      durationSelect.value = "";
+    }
   }
+
+  toggleDuration(); // on page load
+  serviceSelect.addEventListener("change", toggleDuration);
+}
 
   bookingForm.addEventListener("submit", function (e) {
     e.preventDefault(); // Stop page reload
@@ -31,6 +56,7 @@ if (bookingForm) {
     // FIX: select elements explicitly using document.getElementById
     const bookingData = {
       service: document.getElementById("service").value,
+      duration: document.getElementById("duration") ? document.getElementById("duration").value : "",
       date: document.getElementById("date").value,
       time: document.getElementById("time").value,
       name: document.getElementById("name").value, 
