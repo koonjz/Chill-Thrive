@@ -11,14 +11,11 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
-// ================= SLOT CAPACITY LOGIC (NO DUPLICATES) =================
+// ================= SLOT CAPACITY LOGIC (FINAL & SAFE) =================
 const dateInput = document.getElementById("date");
 const timeSelect = document.getElementById("time");
 
-if (dateInput && timeSelect && !dateInput.dataset.listenerAdded) {
-
-  // mark listener as added (CRITICAL)
-  dateInput.dataset.listenerAdded = "true";
+if (dateInput && timeSelect) {
 
   const defaultSlots = [
     "07:00 – 10:00",
@@ -27,16 +24,19 @@ if (dateInput && timeSelect && !dateInput.dataset.listenerAdded) {
     "18:00 – 21:00"
   ];
 
+  let lastDate = "";
+
   dateInput.addEventListener("change", async () => {
 
-    // FULL RESET (important)
+    const selectedDate = dateInput.value;
+    if (!selectedDate || selectedDate === lastDate) return;
+
+    lastDate = selectedDate;
     timeSelect.innerHTML = `<option value="">Select Time</option>`;
 
-    const selectedDate = dateInput.value;
-    let hasAvailableSlot = false;
+    let hasAvailable = false;
 
-    for (let i = 0; i < defaultSlots.length; i++) {
-      const slot = defaultSlots[i];
+    for (const slot of defaultSlots) {
       const docId = `${selectedDate}_${slot}`;
 
       let capacity = 5;
@@ -48,22 +48,20 @@ if (dateInput && timeSelect && !dateInput.dataset.listenerAdded) {
           capacity = doc.data().capacity;
           booked = doc.data().booked;
         }
-      } catch (e) {
-        console.error("Firestore error:", e);
+      } catch (err) {
+        console.error("Firestore error:", err);
       }
 
       if (booked < capacity) {
-        hasAvailableSlot = true;
-
+        hasAvailable = true;
         const option = document.createElement("option");
         option.value = slot;
         option.textContent = `${slot} (${capacity - booked} slots left)`;
-
         timeSelect.appendChild(option);
       }
     }
 
-    if (!hasAvailableSlot) {
+    if (!hasAvailable) {
       timeSelect.innerHTML = `<option value="">No slots available</option>`;
       dateInput.setCustomValidity("No slots available on this date");
       dateInput.reportValidity();
