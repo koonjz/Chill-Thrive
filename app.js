@@ -15,6 +15,10 @@ const db = firebase.firestore();
 const dateInput = document.getElementById("date");
 const timeSelect = document.getElementById("time");
 
+// ===== Prevent past dates =====
+const today = new Date().toISOString().split("T")[0];
+dateInput.setAttribute("min", today);
+
 if (dateInput && timeSelect) {
 
   const defaultSlots = [
@@ -29,42 +33,57 @@ if (dateInput && timeSelect) {
   });
 
   function loadSlots(selectedDate) {
-    timeSelect.innerHTML = `<option value="">Select Time</option>`;
+  timeSelect.innerHTML = `<option value="">Select Time</option>`;
 
-    let availableCount = 0;
+  const now = new Date();
+  const isToday = selectedDate === now.toISOString().split("T")[0];
 
-    defaultSlots.forEach(slot => {
-      const docId = `${selectedDate}_${slot}`;
+  const slotTimings = {
+    "07:00 – 10:00": 7,
+    "10:00 – 13:00": 10,
+    "15:00 – 18:00": 15,
+    "18:00 – 21:00": 18
+  };
 
-      db.collection("timeSlots").doc(docId).get().then(doc => {
+  let availableCount = 0;
 
-        let capacity = 5;
-        let booked = 0;
+  defaultSlots.forEach(slot => {
+    const slotHour = slotTimings[slot];
 
-        if (doc.exists) {
-          capacity = doc.data().capacity;
-          booked = doc.data().booked;
-        }
+    // ❌ Skip past slots if date is today
+    if (isToday && now.getHours() >= slotHour) return;
 
-        if (booked < capacity) {
-          availableCount++;
-          const option = document.createElement("option");
-          option.value = slot;
-          option.textContent = `${slot} (${capacity - booked} slots left)`;
-          timeSelect.appendChild(option);
-        }
+    const docId = `${selectedDate}_${slot}`;
 
-        // ❌ All slots full → block date
-        if (availableCount === 0 && slot === defaultSlots[defaultSlots.length - 1]) {
-          dateInput.setCustomValidity("No slots available on this date");
-          dateInput.reportValidity();
-        } else {
-          dateInput.setCustomValidity("");
-        }
+    db.collection("timeSlots").doc(docId).get().then(doc => {
 
-      });
+      let capacity = 5;
+      let booked = 0;
+
+      if (doc.exists) {
+        capacity = doc.data().capacity;
+        booked = doc.data().booked;
+      }
+
+      if (booked < capacity) {
+        availableCount++;
+
+        const option = document.createElement("option");
+        option.value = slot;
+        option.textContent = `${slot} (${capacity - booked} slots left)`;
+        timeSelect.appendChild(option);
+      }
+
+      // ❌ Block date if all slots invalid/full
+      if (availableCount === 0 && slot === defaultSlots[defaultSlots.length - 1]) {
+        dateInput.setCustomValidity("No slots available for this date");
+        dateInput.reportValidity();
+      } else {
+        dateInput.setCustomValidity("");
+      }
     });
-  }
+  });
+}
 }
 
 // ================= BOOKING PAGE LOGIC =================
