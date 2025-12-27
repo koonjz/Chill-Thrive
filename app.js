@@ -11,11 +11,14 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
-// ================= SLOT CAPACITY LOGIC (FAIL-SAFE) =================
+// ================= SLOT CAPACITY LOGIC (NO DUPLICATES) =================
 const dateInput = document.getElementById("date");
 const timeSelect = document.getElementById("time");
 
-if (dateInput && timeSelect) {
+if (dateInput && timeSelect && !dateInput.dataset.listenerAdded) {
+
+  // mark listener as added (CRITICAL)
+  dateInput.dataset.listenerAdded = "true";
 
   const defaultSlots = [
     "07:00 – 10:00",
@@ -26,13 +29,14 @@ if (dateInput && timeSelect) {
 
   dateInput.addEventListener("change", async () => {
 
+    // FULL RESET (important)
     timeSelect.innerHTML = `<option value="">Select Time</option>`;
+
     const selectedDate = dateInput.value;
+    let hasAvailableSlot = false;
 
-    let available = false;
-
-    for (const slot of defaultSlots) {
-
+    for (let i = 0; i < defaultSlots.length; i++) {
+      const slot = defaultSlots[i];
       const docId = `${selectedDate}_${slot}`;
 
       let capacity = 5;
@@ -44,20 +48,22 @@ if (dateInput && timeSelect) {
           capacity = doc.data().capacity;
           booked = doc.data().booked;
         }
-      } catch (err) {
-        console.error("Firestore error:", err);
+      } catch (e) {
+        console.error("Firestore error:", e);
       }
 
       if (booked < capacity) {
-        available = true;
+        hasAvailableSlot = true;
+
         const option = document.createElement("option");
         option.value = slot;
         option.textContent = `${slot} (${capacity - booked} slots left)`;
+
         timeSelect.appendChild(option);
       }
     }
 
-    if (!available) {
+    if (!hasAvailableSlot) {
       timeSelect.innerHTML = `<option value="">No slots available</option>`;
       dateInput.setCustomValidity("No slots available on this date");
       dateInput.reportValidity();
