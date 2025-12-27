@@ -190,6 +190,28 @@ a.card{
   background:#16a34a;
 }
 
+.service-card{
+  max-width:900px;
+  margin:auto;
+}
+
+.service-media{
+  width:100%;
+  border-radius:16px;
+  margin-bottom:1rem;
+  object-fit:cover;
+}
+
+.pricing-tier{
+  display:flex;
+  justify-content:space-between;
+  background:#f5f7fa;
+  padding:10px 14px;
+  border-radius:10px;
+  margin:8px 0;
+  font-weight:500;
+}
+
 /* ================= WHY ================= */
 .why{
   background:var(--light-blue);
@@ -322,6 +344,7 @@ select{
   padding:10px 16px;
   border-radius:50%;
 }
+
 
 
 
