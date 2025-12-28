@@ -239,3 +239,45 @@ if (textContainer || videoContainer) {
       });
     });
 }
+
+// ================= GALLERY & EVENTS LOGIC =================
+document.addEventListener("DOMContentLoaded", () => {
+
+  const galleryGrid = document.getElementById("galleryGrid");
+  const eventsGrid = document.getElementById("eventsGrid");
+
+  if (!galleryGrid && !eventsGrid) return;
+
+  db.collection("events")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(snapshot => {
+
+      if (galleryGrid) galleryGrid.innerHTML = "";
+      if (eventsGrid) eventsGrid.innerHTML = "";
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+
+        // ----- PHOTO GALLERY -----
+        if (galleryGrid && ["session","workshop","bts"].includes(data.category)) {
+          const img = document.createElement("img");
+          img.src = data.image;
+          img.alt = data.title;
+          galleryGrid.appendChild(img);
+        }
+
+        // ----- EVENTS SECTION -----
+        if (eventsGrid && data.category === "event") {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <img src="${data.image}" alt="${data.title}">
+            <h3>${data.title}</h3>
+            <p>${data.description}</p>
+            <p><strong>Date:</strong> ${data.date || "Coming Soon"}</p>
+          `;
+          eventsGrid.appendChild(card);
+        }
+      });
+    });
+});
