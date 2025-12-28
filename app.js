@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = doc.data();
 
         // ----- PHOTO GALLERY -----
-        if (galleryGrid && ["session","workshop","bts"].includes(data.category)) {
+        if (galleryGrid && ["session","bts"].includes(data.category)) {
           const img = document.createElement("img");
           img.src = data.image;
           img.alt = data.title;
@@ -267,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // ----- EVENTS SECTION -----
-        if (eventsGrid && data.category === "event") {
+        if (eventsGrid && ["event","workshop"].includes(data.category)) {
           const card = document.createElement("div");
           card.className = "card";
           card.innerHTML = `
