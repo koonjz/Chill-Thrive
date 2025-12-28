@@ -36,7 +36,8 @@ if (dateInput && timeSelect) {
   timeSelect.innerHTML = `<option value="">Select Time</option>`;
 
   const now = new Date();
-  const isToday = selectedDate === now.toISOString().split("T")[0];
+  const todayStr = now.toISOString().split("T")[0];
+  const isToday = selectedDate === todayStr;
 
   const slotTimings = {
     "07:00 – 10:00": 7,
@@ -46,12 +47,18 @@ if (dateInput && timeSelect) {
   };
 
   let availableCount = 0;
+  let validSlotChecked = 0;   // 🔹 ADD
+  let pastSlotCount = 0;      // 🔹 ADD
 
   defaultSlots.forEach(slot => {
     const slotHour = slotTimings[slot];
+    validSlotChecked++;
 
-    // ❌ Skip past slots if date is today
-    if (isToday && now.getHours() >= slotHour) return;
+    // 🔹 Count past slots for today
+    if (isToday && now.getHours() >= slotHour) {
+      pastSlotCount++;
+      return;
+    }
 
     const docId = `${selectedDate}_${slot}`;
 
@@ -74,16 +81,22 @@ if (dateInput && timeSelect) {
         timeSelect.appendChild(option);
       }
 
-      // ❌ Block date if all slots invalid/full
-      if (availableCount === 0 && slot === defaultSlots[defaultSlots.length - 1]) {
-        dateInput.setCustomValidity("No slots available for this date");
+      // 🔹 FINAL VALIDITY CHECK
+      if (
+        validSlotChecked === defaultSlots.length &&
+        (availableCount === 0 || pastSlotCount === defaultSlots.length)
+      ) {
+        dateInput.setCustomValidity(
+          isToday
+            ? "All time slots for today have already passed."
+            : "No slots available for this date."
+        );
         dateInput.reportValidity();
       } else {
         dateInput.setCustomValidity("");
       }
     });
   });
-}
 }
 
 // ================= BOOKING PAGE LOGIC =================
