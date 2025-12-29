@@ -52,6 +52,18 @@ if (dateInput && timeSelect) {
     const now = new Date();
     const isToday = selectedDate === now.toISOString().split("T")[0];
 
+    // ✅ CASE: All slots already passed today (REAL-TIME CHECK)
+if (isToday) {
+  const allPassed = defaultSlots.every(slot => now.getHours() >= slotTimings[slot]);
+
+  if (allPassed) {
+    timeSelect.innerHTML = `<option value="">No slots available</option>`;
+    dateInput.setCustomValidity("All time slots for today have already passed.");
+    dateInput.reportValidity();
+    return; // ⛔ stop further processing
+  }
+}
+
     let validSlotCount = 0;
     let availableCount = 0;
 
