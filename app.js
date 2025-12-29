@@ -57,7 +57,7 @@ if (dateInput && timeSelect) {
       const allPassed = defaultSlots.every(slot => now.getHours() >= slotTimings[slot]);
 
       if (allPassed) {
-        timeSelect.innerHTML = `<option value="">No slots available</option>`;
+        timeSelect.innerHTML = `<option value="unavailable" disabled>No slots available</option>`;
         dateInput.setCustomValidity("All time slots for today have already passed.");
         dateInput.reportValidity();
         return;
