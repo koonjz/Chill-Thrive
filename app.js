@@ -17,9 +17,8 @@ const timeSelect = document.getElementById("time");
 
 if (dateInput && timeSelect) {
 
-  // ---- Prevent past dates ----
-  const todayStr = new Date().toISOString().split("T")[0];
-  dateInput.min = todayStr;
+  const today = new Date().toISOString().split("T")[0];
+  dateInput.setAttribute("min", today);
 
   const defaultSlots = [
     "07:00 – 10:00",
@@ -35,61 +34,74 @@ if (dateInput && timeSelect) {
     "18:00 – 21:00": 18
   };
 
+  let renderToken = 0; // ✅ prevents async duplication
+
   dateInput.addEventListener("change", () => {
-    loadSlots(dateInput.value);
+    const selectedDate = dateInput.value;
+    if (!selectedDate) return;
+    loadSlots(selectedDate);
   });
 
-  async function loadSlots(selectedDate) {
+  function loadSlots(selectedDate) {
+    renderToken++;                       // 🔑 invalidate old requests
+    const currentToken = renderToken;
+
     timeSelect.innerHTML = `<option value="">Select Time</option>`;
     dateInput.setCustomValidity("");
 
     const now = new Date();
-    const isToday = selectedDate === todayStr;
+    const isToday = selectedDate === now.toISOString().split("T")[0];
 
     let validSlotCount = 0;
-    let availableSlotCount = 0;
+    let availableCount = 0;
 
-    for (const slot of defaultSlots) {
+    defaultSlots.forEach(slot => {
       const slotHour = slotTimings[slot];
 
-      // ---- Skip past slots (today) ----
-      if (isToday && now.getHours() >= slotHour) continue;
-
+      if (isToday && now.getHours() >= slotHour) return;
       validSlotCount++;
 
       const docId = `${selectedDate}_${slot}`;
-      const doc = await db.collection("timeSlots").doc(docId).get();
 
-      let capacity = 5;
-      let booked = 0;
+      db.collection("timeSlots").doc(docId).get().then(doc => {
 
-      if (doc.exists) {
-        capacity = doc.data().capacity;
-        booked = doc.data().booked;
-      }
+        // ❌ Stop if outdated async response
+        if (currentToken !== renderToken) return;
 
-      if (booked < capacity) {
-        availableSlotCount++;
+        let capacity = 5;
+        let booked = 0;
 
-        const option = document.createElement("option");
-        option.value = slot;
-        option.textContent = `${slot} (${capacity - booked} slots left)`;
-        timeSelect.appendChild(option);
-      }
-    }
+        if (doc.exists) {
+          capacity = doc.data().capacity;
+          booked = doc.data().booked;
+        }
 
-    // ---- VALIDATION MESSAGES ----
-    if (validSlotCount === 0) {
-      dateInput.setCustomValidity("All time slots for today have already passed.");
-      dateInput.reportValidity();
-    }
-    else if (availableSlotCount === 0) {
-      dateInput.setCustomValidity("No slots available on this date.");
-      dateInput.reportValidity();
-    }
-    else {
-      dateInput.setCustomValidity("");
-    }
+        if (booked < capacity) {
+          availableCount++;
+
+          const option = document.createElement("option");
+          option.value = slot;
+          option.textContent = `${slot} (${capacity - booked} slots left)`;
+          timeSelect.appendChild(option);
+        }
+
+        // 🧠 VALIDATION (run once at end)
+        if (slot === defaultSlots[defaultSlots.length - 1]) {
+
+          if (isToday && validSlotCount === 0) {
+            dateInput.setCustomValidity("All time slots for today have already passed.");
+            dateInput.reportValidity();
+          }
+          else if (availableCount === 0) {
+            dateInput.setCustomValidity("No slots available on this date.");
+            dateInput.reportValidity();
+          }
+          else {
+            dateInput.setCustomValidity("");
+          }
+        }
+      });
+    });
   }
 }
 
