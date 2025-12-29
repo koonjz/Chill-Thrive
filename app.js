@@ -99,7 +99,7 @@ if (dateInput && timeSelect) {
 
         // ✅ CASE 2: All slots full (future or today)
         if (processedSlots === defaultSlots.length && availableCount === 0) {
-          timeSelect.innerHTML = `<option value="">No slots available</option>`;
+          timeSelect.innerHTML = `<option value="unavailable" disabled>No slots available</option>`;
           dateInput.setCustomValidity("No slots available on this date.");
           dateInput.reportValidity();
         }
