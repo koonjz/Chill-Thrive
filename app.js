@@ -34,7 +34,7 @@ if (dateInput && timeSelect) {
     "18:00 – 21:00": 18
   };
 
-  let renderToken = 0; // ✅ prevents async duplication
+  let renderToken = 0;
 
   dateInput.addEventListener("change", () => {
     const selectedDate = dateInput.value;
@@ -43,7 +43,7 @@ if (dateInput && timeSelect) {
   });
 
   function loadSlots(selectedDate) {
-    renderToken++;                       // 🔑 invalidate old requests
+    renderToken++;
     const currentToken = renderToken;
 
     timeSelect.innerHTML = `<option value="">Select Time</option>`;
@@ -52,33 +52,33 @@ if (dateInput && timeSelect) {
     const now = new Date();
     const isToday = selectedDate === now.toISOString().split("T")[0];
 
-    // ✅ CASE: All slots already passed today (REAL-TIME CHECK)
-if (isToday) {
-  const allPassed = defaultSlots.every(slot => now.getHours() >= slotTimings[slot]);
+    // ✅ CASE 1: All slots passed today
+    if (isToday) {
+      const allPassed = defaultSlots.every(slot => now.getHours() >= slotTimings[slot]);
 
-  if (allPassed) {
-    timeSelect.innerHTML = `<option value="">No slots available</option>`;
-    dateInput.setCustomValidity("All time slots for today have already passed.");
-    dateInput.reportValidity();
-    return; // ⛔ stop further processing
-  }
-}
+      if (allPassed) {
+        timeSelect.innerHTML = `<option value="">No slots available</option>`;
+        dateInput.setCustomValidity("All time slots for today have already passed.");
+        dateInput.reportValidity();
+        return;
+      }
+    }
 
-    let validSlotCount = 0;
     let availableCount = 0;
+    let processedSlots = 0;
 
     defaultSlots.forEach(slot => {
       const slotHour = slotTimings[slot];
 
       if (isToday && now.getHours() >= slotHour) return;
-      validSlotCount++;
 
       const docId = `${selectedDate}_${slot}`;
 
       db.collection("timeSlots").doc(docId).get().then(doc => {
 
-        // ❌ Stop if outdated async response
         if (currentToken !== renderToken) return;
+
+        processedSlots++;
 
         let capacity = 5;
         let booked = 0;
@@ -97,21 +97,17 @@ if (isToday) {
           timeSelect.appendChild(option);
         }
 
-        // 🧠 VALIDATION (run once at end)
-        if (slot === defaultSlots[defaultSlots.length - 1]) {
-
-          if (isToday && validSlotCount === 0) {
-            dateInput.setCustomValidity("All time slots for today have already passed.");
-            dateInput.reportValidity();
-          }
-          else if (availableCount === 0) {
-            dateInput.setCustomValidity("No slots available on this date.");
-            dateInput.reportValidity();
-          }
-          else {
-            dateInput.setCustomValidity("");
-          }
+        // ✅ CASE 2: All slots full (future or today)
+        if (processedSlots === defaultSlots.length && availableCount === 0) {
+          timeSelect.innerHTML = `<option value="">No slots available</option>`;
+          dateInput.setCustomValidity("No slots available on this date.");
+          dateInput.reportValidity();
         }
+
+        if (availableCount > 0) {
+          dateInput.setCustomValidity("");
+        }
+
       });
     });
   }
