@@ -374,35 +374,68 @@ db.collection("combos").where("active","==",true).onSnapshot(async snapshot => {
   }
 });
 
-// ================= DISCOUNT ENGINE =================
-async function getComboDiscount(originalPrice) {
-  let discountPercent = 0;
+// ================= DISCOUNT ENGINE (FIXED) =================
+async function getComboDiscount(originalPrice, promoCode = null) {
+
+  let appliedDiscount = {
+    percent: 0,
+    type: null
+  };
+
   const nowHour = new Date().getHours();
 
   const snapshot = await db.collection("discounts")
-    .where("active","==",true)
+    .where("active", "==", true)
     .get();
 
   snapshot.forEach(doc => {
     const d = doc.data();
 
-    // ⏰ Time-based
-    if (d.type === "time" && nowHour >= d.startHour && nowHour < d.endHour) {
-      discountPercent = Math.max(discountPercent, d.percent);
+    // 🎟 PROMO CODE (highest priority)
+    if (
+      d.type === "promo" &&
+      promoCode &&
+      d.code === promoCode
+    ) {
+      appliedDiscount = {
+        percent: d.percent,
+        type: "promo"
+      };
     }
 
-    // 🤖 Auto-apply
-    if (d.type === "auto" && d.target === "combo") {
-      discountPercent = Math.max(discountPercent, d.percent);
+    // ⏰ TIME-BASED (only if promo not applied)
+    if (
+      d.type === "time" &&
+      appliedDiscount.type !== "promo" &&
+      nowHour >= d.startHour &&
+      nowHour < d.endHour
+    ) {
+      appliedDiscount = {
+        percent: d.percent,
+        type: "time"
+      };
+    }
+
+    // 🤖 AUTO (only if nothing else applied)
+    if (
+      d.type === "auto" &&
+      appliedDiscount.type === null &&
+      d.target === "combo"
+    ) {
+      appliedDiscount = {
+        percent: d.percent,
+        type: "auto"
+      };
     }
   });
 
   const discountedPrice = Math.round(
-    originalPrice - (originalPrice * discountPercent / 100)
+    originalPrice - (originalPrice * appliedDiscount.percent / 100)
   );
 
   return {
     discountedPrice,
-    discountPercent
+    discountPercent: appliedDiscount.percent,
+    discountType: appliedDiscount.type
   };
 }
