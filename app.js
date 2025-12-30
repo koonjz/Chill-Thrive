@@ -342,40 +342,13 @@ db.collection("services").where("active","==",true).onSnapshot(snapshot => {
   });
 });
 
-// ================= AUTO DISCOUNT SYSTEM FOR COMBOS =================
-async function getComboDiscount(comboName, originalPrice) {
-  const snap = await db.collection("discounts")
-    .where("type", "==", "combo")
-    .where("target", "==", comboName)
-    .where("active", "==", true)
-    .get();
-
-  let discountedPrice = originalPrice;
-
-  snap.forEach(doc => {
-    const d = doc.data();
-
-    if (d.discountType === "percent") {
-      discountedPrice = Math.round(originalPrice * (1 - d.value / 100));
-    }
-
-    if (d.discountType === "fixed") {
-      discountedPrice = Math.max(0, originalPrice - d.value);
-    }
-  });
-
-  return discountedPrice;
-}
-
-// ================= LOAD COMBOS =================
-db.collection("combos").where("active", "==", true).onSnapshot(async snapshot => {
+// ----- Load Combos -----
+db.collection("combos").where("active","==",true).onSnapshot(snapshot => {
   if (!comboContainer) return;
   comboContainer.innerHTML = "";
 
-  for (const doc of snapshot.docs) {
+  snapshot.forEach(doc => {
     const c = doc.data();
-
-    const discounted = await getComboDiscount(c.name, c.originalPrice);
 
     const card = document.createElement("div");
     card.className = "card combo-card";
@@ -385,15 +358,13 @@ db.collection("combos").where("active", "==", true).onSnapshot(async snapshot =>
       <h3>${c.name}</h3>
       <p>${c.description}</p>
       <p><strong>Time:</strong> ${c.time} minutes</p>
-
       <p class="price">
         <del>₹${c.originalPrice}</del>
-        <strong>₹${discounted}</strong>
+        <strong>₹${c.discountedPrice}</strong>
       </p>
-
       <a href="booking.html?service=${encodeURIComponent(c.name)}" class="btn">Book Now</a>
     `;
 
     comboContainer.appendChild(card);
-  }
+  });
 });
