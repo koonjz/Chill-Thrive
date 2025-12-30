@@ -343,12 +343,14 @@ db.collection("services").where("active","==",true).onSnapshot(snapshot => {
 });
 
 // ----- Load Combos -----
-db.collection("combos").where("active","==",true).onSnapshot(snapshot => {
+db.collection("combos").where("active","==",true).onSnapshot(async snapshot => {
   if (!comboContainer) return;
   comboContainer.innerHTML = "";
 
-  snapshot.forEach(doc => {
+  for (const doc of snapshot.docs) {
     const c = doc.data();
+
+    const discount = await getComboDiscount(c.originalPrice);
 
     const card = document.createElement("div");
     card.className = "card combo-card";
@@ -358,13 +360,49 @@ db.collection("combos").where("active","==",true).onSnapshot(snapshot => {
       <h3>${c.name}</h3>
       <p>${c.description}</p>
       <p><strong>Time:</strong> ${c.time} minutes</p>
+
       <p class="price">
         <del>₹${c.originalPrice}</del>
-        <strong>₹${c.discountedPrice}</strong>
+        <strong>₹${discount.discountedPrice}</strong>
+        ${discount.discountPercent > 0 ? `<span class="discount-tag">${discount.discountPercent}% OFF</span>` : ""}
       </p>
+
       <a href="booking.html?service=${encodeURIComponent(c.name)}" class="btn">Book Now</a>
     `;
 
     comboContainer.appendChild(card);
-  });
+  }
 });
+
+// ================= DISCOUNT ENGINE =================
+async function getComboDiscount(originalPrice) {
+  let discountPercent = 0;
+  const nowHour = new Date().getHours();
+
+  const snapshot = await db.collection("discounts")
+    .where("active","==",true)
+    .get();
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+
+    // ⏰ Time-based
+    if (d.type === "time" && nowHour >= d.startHour && nowHour < d.endHour) {
+      discountPercent = Math.max(discountPercent, d.percent);
+    }
+
+    // 🤖 Auto-apply
+    if (d.type === "auto" && d.target === "combo") {
+      discountPercent = Math.max(discountPercent, d.percent);
+    }
+  });
+
+  const discountedPrice = Math.round(
+    originalPrice - (originalPrice * discountPercent / 100)
+  );
+
+  return {
+    discountedPrice,
+    discountPercent
+  };
+}
