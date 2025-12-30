@@ -364,8 +364,7 @@ db.collection("combos").where("active","==",true).onSnapshot(async snapshot => {
       <p class="price">
         <del>₹${c.originalPrice}</del>
         <strong>₹${discount.discountedPrice}</strong>
-        ${discount.discountType ? `<span class="discount-tag">${discount.discountPercent}% OFF</span>` : ""}
-      </p>
+        ${discount.discountPercent > 0 ? `<span class="discount-tag">${discount.discountPercent}% OFF</span>` : ""}
 
       <a href="booking.html?service=${encodeURIComponent(c.name)}" class="btn">Book Now</a>
     `;
