@@ -353,7 +353,18 @@ async function renderCombos() {
 
   for (const doc of snapshot.docs) {
     const c = doc.data();
-    const discount = await getComboDiscount(c.originalPrice, activePromoCode);
+    let finalPrice = c.originalPrice;
+let discountPercent = 0;
+
+if (c.discountType === "fixed" && c.fixedDiscount) {
+  finalPrice = c.originalPrice - c.fixedDiscount;
+}
+
+if (c.discountType === "percent") {
+  const d = await getComboDiscount(c.originalPrice, activePromoCode);
+  finalPrice = d.discountedPrice;
+  discountPercent = d.discountPercent;
+}
 
     const card = document.createElement("div");
     card.className = "card combo-card";
@@ -365,12 +376,17 @@ async function renderCombos() {
       <p><strong>Time:</strong> ${c.time} minutes</p>
 
       <p class="price">
-        <del>₹${c.originalPrice}</del>
-        <strong>₹${discount.discountedPrice}</strong>
-        ${discount.discountPercent
-          ? `<span class="discount-tag">${discount.discountPercent}% OFF</span>`
-          : ""}
-      </p>
+  <del>₹${c.originalPrice}</del>
+  <strong>₹${finalPrice}</strong>
+
+  ${discountPercent
+    ? `<span class="discount-tag">${discountPercent}% OFF</span>`
+    : ""}
+
+  ${c.discountType === "fixed"
+    ? `<span class="discount-tag">₹${c.fixedDiscount} OFF</span>`
+    : ""}
+</p>
 
       <a href="booking.html?service=${encodeURIComponent(c.name)}" class="btn">Book Now</a>
     `;
@@ -385,66 +401,41 @@ renderCombos();
 // ================= DISCOUNT ENGINE (FIXED) =================
 async function getComboDiscount(originalPrice, promoCode = null) {
 
-  let appliedDiscount = {
-    percent: 0,
-    type: null
-  };
+  let applied = { percent: 0, type: null };
+  const hour = new Date().getHours();
 
-  const nowHour = new Date().getHours();
-
-  const snapshot = await db.collection("discounts")
-    .where("active", "==", true)
+  const snap = await db.collection("discounts")
+    .where("active","==",true)
     .get();
 
-  snapshot.forEach(doc => {
+  snap.forEach(doc => {
     const d = doc.data();
 
-    // 🎟 PROMO CODE (highest priority)
-    if (
-      d.type === "promo" &&
-      promoCode &&
-      d.code === promoCode
-    ) {
-      appliedDiscount = {
-        percent: d.percent,
-        type: "promo"
-      };
+    if (d.type === "promo" && promoCode && d.code === promoCode) {
+      applied = { percent: d.percent, type: "promo" };
     }
 
-    // ⏰ TIME-BASED (only if promo not applied)
-    if (
+    else if (
       d.type === "time" &&
-      appliedDiscount.type !== "promo" &&
-      nowHour >= d.startHour &&
-      nowHour < d.endHour
+      applied.type !== "promo" &&
+      hour >= d.startHour &&
+      hour < d.endHour
     ) {
-      appliedDiscount = {
-        percent: d.percent,
-        type: "time"
-      };
+      applied = { percent: d.percent, type: "time" };
     }
 
-    // 🤖 AUTO (only if nothing else applied)
-    if (
+    else if (
       d.type === "auto" &&
-      appliedDiscount.type === null &&
+      applied.type === null &&
       d.target === "combo"
     ) {
-      appliedDiscount = {
-        percent: d.percent,
-        type: "auto"
-      };
+      applied = { percent: d.percent, type: "auto" };
     }
   });
 
-  const discountedPrice = Math.round(
-    originalPrice - (originalPrice * appliedDiscount.percent / 100)
-  );
-
   return {
-    discountedPrice,
-    discountPercent: appliedDiscount.percent,
-    discountType: appliedDiscount.type
+    discountedPrice: Math.round(originalPrice * (1 - applied.percent / 100)),
+    discountPercent: applied.percent
   };
 }
 
