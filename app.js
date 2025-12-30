@@ -219,6 +219,7 @@ if (contactForm) {
     });
   });
 }
+
 // ================= TESTIMONIALS LOGIC =================
 const textContainer = document.getElementById("textTestimonials");
 const videoContainer = document.getElementById("videoTestimonials");
@@ -341,13 +342,40 @@ db.collection("services").where("active","==",true).onSnapshot(snapshot => {
   });
 });
 
-// ----- Load Combos -----
-db.collection("combos").where("active","==",true).onSnapshot(snapshot => {
+// ================= AUTO DISCOUNT SYSTEM FOR COMBOS =================
+async function getComboDiscount(comboName, originalPrice) {
+  const snap = await db.collection("discounts")
+    .where("type", "==", "combo")
+    .where("target", "==", comboName)
+    .where("active", "==", true)
+    .get();
+
+  let discountedPrice = originalPrice;
+
+  snap.forEach(doc => {
+    const d = doc.data();
+
+    if (d.discountType === "percent") {
+      discountedPrice = Math.round(originalPrice * (1 - d.value / 100));
+    }
+
+    if (d.discountType === "fixed") {
+      discountedPrice = Math.max(0, originalPrice - d.value);
+    }
+  });
+
+  return discountedPrice;
+}
+
+// ================= LOAD COMBOS =================
+db.collection("combos").where("active", "==", true).onSnapshot(async snapshot => {
   if (!comboContainer) return;
   comboContainer.innerHTML = "";
 
-  snapshot.forEach(doc => {
+  for (const doc of snapshot.docs) {
     const c = doc.data();
+
+    const discounted = await getComboDiscount(c.name, c.originalPrice);
 
     const card = document.createElement("div");
     card.className = "card combo-card";
@@ -357,86 +385,15 @@ db.collection("combos").where("active","==",true).onSnapshot(snapshot => {
       <h3>${c.name}</h3>
       <p>${c.description}</p>
       <p><strong>Time:</strong> ${c.time} minutes</p>
+
       <p class="price">
         <del>₹${c.originalPrice}</del>
-        <strong>₹${c.discountedPrice}</strong>
+        <strong>₹${discounted}</strong>
       </p>
+
       <a href="booking.html?service=${encodeURIComponent(c.name)}" class="btn">Book Now</a>
     `;
 
     comboContainer.appendChild(card);
-  });
+  }
 });
-
-let activeDiscounts = [];
-
-db.collection("discounts")
-  .where("active", "==", true)
-  .get()
-  .then(snapshot => {
-    activeDiscounts = snapshot.docs.map(d => d.data());
-  });
-
-function applyDiscount(basePrice, serviceName, promoCode = null) {
-  let finalPrice = basePrice;
-  let appliedDiscount = null;
-  const nowHour = new Date().getHours();
-
-  // 1️⃣ Promo Code (highest priority)
-  if (promoCode) {
-    const promo = activeDiscounts.find(d =>
-      d.type === "promo" &&
-      d.code === promoCode
-    );
-
-    if (promo) {
-      finalPrice -= (basePrice * promo.percent) / 100;
-      appliedDiscount = `Promo Code (${promo.code})`;
-      return { finalPrice, appliedDiscount };
-    }
-  }
-
-  // 2️⃣ Time-Based Discount
-  const timeDiscount = activeDiscounts.find(d =>
-    d.type === "time" &&
-    nowHour >= d.startHour &&
-    nowHour < d.endHour
-  );
-
-  if (timeDiscount) {
-    finalPrice -= (basePrice * timeDiscount.percent) / 100;
-    appliedDiscount = "Time-Based Offer";
-    return { finalPrice, appliedDiscount };
-  }
-
-  // 3️⃣ Auto Service Discount
-  const auto = activeDiscounts.find(d =>
-    d.type === "auto" &&
-    d.service === serviceName
-  );
-
-  if (auto) {
-    finalPrice -= (basePrice * auto.percent) / 100;
-    appliedDiscount = "Special Offer";
-  }
-
-  return { finalPrice, appliedDiscount };
-}
-
-const basePrice = 1499;
-
-const { finalPrice, appliedDiscount } =
-  applyDiscount(basePrice, "Ice Bath Therapy");
-
-priceElement.innerHTML = `
-  ${appliedDiscount ? `<small>${appliedDiscount}</small>` : ""}
-  <strong>₹${Math.round(finalPrice)}</strong>
-`;
-
-const promoCode = document.getElementById("promoCode").value.trim();
-
-const pricing = applyDiscount(
-  basePrice,
-  selectedService,
-  promoCode
-);
