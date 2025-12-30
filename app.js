@@ -367,3 +367,76 @@ db.collection("combos").where("active","==",true).onSnapshot(snapshot => {
     comboContainer.appendChild(card);
   });
 });
+
+let activeDiscounts = [];
+
+db.collection("discounts")
+  .where("active", "==", true)
+  .get()
+  .then(snapshot => {
+    activeDiscounts = snapshot.docs.map(d => d.data());
+  });
+
+function applyDiscount(basePrice, serviceName, promoCode = null) {
+  let finalPrice = basePrice;
+  let appliedDiscount = null;
+  const nowHour = new Date().getHours();
+
+  // 1️⃣ Promo Code (highest priority)
+  if (promoCode) {
+    const promo = activeDiscounts.find(d =>
+      d.type === "promo" &&
+      d.code === promoCode
+    );
+
+    if (promo) {
+      finalPrice -= (basePrice * promo.percent) / 100;
+      appliedDiscount = `Promo Code (${promo.code})`;
+      return { finalPrice, appliedDiscount };
+    }
+  }
+
+  // 2️⃣ Time-Based Discount
+  const timeDiscount = activeDiscounts.find(d =>
+    d.type === "time" &&
+    nowHour >= d.startHour &&
+    nowHour < d.endHour
+  );
+
+  if (timeDiscount) {
+    finalPrice -= (basePrice * timeDiscount.percent) / 100;
+    appliedDiscount = "Time-Based Offer";
+    return { finalPrice, appliedDiscount };
+  }
+
+  // 3️⃣ Auto Service Discount
+  const auto = activeDiscounts.find(d =>
+    d.type === "auto" &&
+    d.service === serviceName
+  );
+
+  if (auto) {
+    finalPrice -= (basePrice * auto.percent) / 100;
+    appliedDiscount = "Special Offer";
+  }
+
+  return { finalPrice, appliedDiscount };
+}
+
+const basePrice = 1499;
+
+const { finalPrice, appliedDiscount } =
+  applyDiscount(basePrice, "Ice Bath Therapy");
+
+priceElement.innerHTML = `
+  ${appliedDiscount ? `<small>${appliedDiscount}</small>` : ""}
+  <strong>₹${Math.round(finalPrice)}</strong>
+`;
+
+const promoCode = document.getElementById("promoCode").value.trim();
+
+const pricing = applyDiscount(
+  basePrice,
+  selectedService,
+  promoCode
+);
