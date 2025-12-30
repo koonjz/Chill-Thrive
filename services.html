@@ -1,37 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CJP105Q5Z3"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-CJP105Q5Z3');
-</script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Services | Chill Thrive</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-  <!-- CSS -->
   <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
-<!-- ================= NAVBAR ================= -->
 <header>
   <nav class="container nav">
     <h2 class="logo">
-  <a href="index.html" class="logo-link">
-    <img src="https://i.ibb.co/gMFZYF97/chill-thrive-logo.jpg" alt="Chill Thrive Logo" class="logo-img">
-    Chill Thrive
-  </a>
-</h2>
+      <a href="index.html" class="logo-link">
+        <img src="https://i.ibb.co/gMFZYF97/chill-thrive-logo.jpg" class="logo-img">
+        Chill Thrive
+      </a>
+    </h2>
+
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="services.html">Services</a></li>
@@ -45,168 +33,29 @@
   </nav>
 </header>
 
-<!-- ================= PAGE HERO ================= -->
 <section class="hero">
   <div class="container">
     <h1>Our Wellness Services</h1>
-    <p>Science-backed recovery designed for performance and balance.</p>
+    <p>Science-backed recovery experiences.</p>
   </div>
 </section>
 
-<!-- ================= SERVICES LIST ================= -->
+<!-- SERVICES -->
 <section class="container section">
-
-  <!-- Ice Bath -->
-  <div class="card service-card" id="ice-bath">
-
-    <img src="https://i.ibb.co/6J19nH52/icebath.jpg" alt="Ice Bath Therapy" class="service-media">
-
-    <h3>Ice Bath Therapy</h3>
-
-    <p>
-      Cold immersion therapy designed to reduce inflammation, improve circulation,
-      and enhance mental toughness.
-    </p>
-
-    <h4>Benefits</h4>
-    <ul>
-      <li>Muscle recovery</li>
-      <li>Reduced soreness</li>
-      <li>Improved focus</li>
-      <li>Stress regulation</li>
-    </ul>
-
-    <h4>Duration & Pricing</h4>
-
-<a href="booking.html?service=Ice Bath Therapy&duration=30" class="pricing-tier link-tier">
-  <span>30 Minutes</span>
-  <strong>₹XXX</strong>
-</a>
-
-<a href="booking.html?service=Ice Bath Therapy&duration=60" class="pricing-tier link-tier">
-  <span>60 Minutes</span>
-  <strong>₹XXX</strong>
-</a>
-
-    <a href="booking.html?service=Ice Bath Therapy" class="btn">Book Now</a>
-  </div>
-
-  <br>
-
-  <!-- Jacuzzi -->
-  <div class="card service-card" id="jacuzzi">
-
-    <img src="https://i.ibb.co/KzK7NVz3/jacuzzitherapy.jpg" alt="Jacuzzi Therapy" class="service-media">
-
-    <h3>Jacuzzi Therapy</h3>
-
-    <p>
-      Warm hydrotherapy for muscle relaxation and nervous system calm.
-    </p>
-
-    <h4>Benefits</h4>
-    <ul>
-      <li>Muscle relaxation</li>
-      <li>Improved blood flow</li>
-      <li>Stress relief</li>
-    </ul>
-
-    <p><strong>Duration:</strong> 30 minutes</p>
-    <p><strong>Price:</strong> ₹XXX</p>
-
-    <a href="booking.html?service=Jacuzzi Therapy" class="btn">Book Now</a>
-  </div>
-
-  <br>
-
-  <!-- Steam Bath -->
-  <div class="card service-card" id="steam">
-
-    <img src="https://i.ibb.co/5ht7XRgG/steam-bath.png" alt="Steam Bath" class="service-media">
-
-    <h3>Steam Bath</h3>
-
-    <p>
-      Detoxifying heat therapy for relaxation and respiratory health.
-    </p>
-
-    <h4>Benefits</h4>
-    <ul>
-      <li>Detox</li>
-      <li>Skin rejuvenation</li>
-      <li>Mental relaxation</li>
-    </ul>
-
-    <p><strong>Duration:</strong> 20–30 minutes</p>
-    <p><strong>Price:</strong> ₹XXX</p>
-
-    <a href="booking.html?service=Steam Bath" class="btn">Book Now</a>
-  </div>
-
+  <div id="servicesContainer"></div>
 </section>
 
-<!-- ================= COMBO PACKAGES ================= -->
+<!-- COMBOS -->
 <section class="why">
-  <div class="container" id="combo">
+  <div class="container">
     <h2 class="section-title">Combo Packages</h2>
-
-    <div class="services">
-
-      <!-- Combo 1 -->
-      <div class="card combo-card">
-        <span class="badge">Popular</span>
-        <h3>Ice Bath + Steam</h3>
-        <p>Balanced recovery using cold and heat therapy.</p>
-
-        <p><strong>Time:</strong> 60 minutes</p>
-
-        <p class="price">
-          <del>₹2000</del>
-          <strong>₹1499</strong>
-        </p>
-
-        <a href="booking.html?service=Ice Bath %2B Steam" class="btn">Book Now</a>
-      </div>
-
-      <!-- Combo 2 -->
-      <div class="card combo-card">
-        <h3>Ice Bath + Jacuzzi</h3>
-        <p>Contrast therapy for enhanced circulation.</p>
-
-        <p><strong>Time:</strong> 60 minutes</p>
-
-        <p class="price">
-          <del>₹2200</del>
-          <strong>₹1699</strong>
-        </p>
-
-        <a href="booking.html?service=Ice Bath %2B Jacuzzi" class="btn">Book Now</a>
-      </div>
-
-      <!-- Combo 3 -->
-      <div class="card combo-card">
-        <span class="badge best">Best Value</span>
-        <h3>Full Recovery Combo</h3>
-        <p>Ice bath + steam + jacuzzi experience.</p>
-
-        <p><strong>Time:</strong> 90 minutes</p>
-
-        <p class="price">
-          <del>₹3000</del>
-          <strong>₹2199</strong>
-        </p>
-
-        <a href="booking.html?service=Full Recovery Combo (Ice %2B Steam %2B Jacuzzi)" class="btn">Book Now</a>
-      </div>
-
-    </div>
+    <div id="comboContainer" class="services"></div>
   </div>
 </section>
 
-<!-- ================= FOOTER ================= -->
 <footer>
   <div class="container footer">
-    <p>© 2025 Chill Thrive. All rights reserved.</p>
+    <p>© 2025 Chill Thrive</p>
   </div>
 </footer>
 
@@ -216,18 +65,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
