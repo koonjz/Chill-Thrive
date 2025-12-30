@@ -296,3 +296,74 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 });
+
+// ================= SERVICES MANAGEMENT =================
+const servicesContainer = document.getElementById("servicesContainer");
+const comboContainer = document.getElementById("comboContainer");
+
+// ----- Load Services -----
+db.collection("services").where("active","==",true).onSnapshot(snapshot => {
+  if (!servicesContainer) return;
+  servicesContainer.innerHTML = "";
+
+  snapshot.forEach(doc => {
+    const s = doc.data();
+
+    const card = document.createElement("div");
+    card.className = "card service-card";
+
+    let durationHTML = "";
+    s.durations.forEach(d => {
+      durationHTML += `
+        <a href="booking.html?service=${encodeURIComponent(s.name)}&duration=${d.minutes}"
+           class="pricing-tier link-tier">
+          <span>${d.minutes} Minutes</span>
+          <strong>₹${d.price}</strong>
+        </a>
+      `;
+    });
+
+    card.innerHTML = `
+      <img src="${s.media}" class="service-media">
+      <h3>${s.name}</h3>
+      <p>${s.description}</p>
+
+      <h4>Benefits</h4>
+      <ul>${s.benefits.map(b=>`<li>${b}</li>`).join("")}</ul>
+
+      <h4>Duration & Pricing</h4>
+      ${durationHTML}
+
+      <a href="booking.html?service=${encodeURIComponent(s.name)}" class="btn">Book Now</a>
+    `;
+
+    servicesContainer.appendChild(card);
+  });
+});
+
+// ----- Load Combos -----
+db.collection("combos").where("active","==",true).onSnapshot(snapshot => {
+  if (!comboContainer) return;
+  comboContainer.innerHTML = "";
+
+  snapshot.forEach(doc => {
+    const c = doc.data();
+
+    const card = document.createElement("div");
+    card.className = "card combo-card";
+
+    card.innerHTML = `
+      ${c.badge ? `<span class="badge">${c.badge}</span>` : ""}
+      <h3>${c.name}</h3>
+      <p>${c.description}</p>
+      <p><strong>Time:</strong> ${c.time} minutes</p>
+      <p class="price">
+        <del>₹${c.originalPrice}</del>
+        <strong>₹${c.discountedPrice}</strong>
+      </p>
+      <a href="booking.html?service=${encodeURIComponent(c.name)}" class="btn">Book Now</a>
+    `;
+
+    comboContainer.appendChild(card);
+  });
+});
