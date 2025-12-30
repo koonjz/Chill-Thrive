@@ -258,6 +258,21 @@ a.card{
 
 #duration-wrapper{ display:none; }
 
+.promo-box{
+  max-width:400px;
+  margin:20px auto;
+  text-align:center;
+}
+.promo-box input{
+  padding:10px;
+  width:100%;
+  margin:10px 0;
+}
+.promo-msg{
+  font-size:14px;
+  margin-top:8px;
+}
+
 /* ================= WHY ================= */
 .why{
   background:var(--light-blue);
@@ -390,3 +405,4 @@ select{
   padding:10px 16px;
   border-radius:50%;
 }
+
