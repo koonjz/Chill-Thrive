@@ -342,46 +342,15 @@ db.collection("services").where("active","==",true).onSnapshot(snapshot => {
   });
 });
 
-// ----- Load Combos -----
-db.collection("combos").where("active","==",true).onSnapshot(async snapshot => {
-  if (!comboContainer) return;
-  comboContainer.innerHTML = "";
-
-  for (const doc of snapshot.docs) {
-    const c = doc.data();
-
-    const discount = await getComboDiscount(c.originalPrice, activePromoCode);
-
-    const card = document.createElement("div");
-    card.className = "card combo-card";
-
-    card.innerHTML = `
-      ${c.badge ? `<span class="badge">${c.badge}</span>` : ""}
-      <h3>${c.name}</h3>
-      <p>${c.description}</p>
-      <p><strong>Time:</strong> ${c.time} minutes</p>
-
-      <p class="price">
-        <del>₹${c.originalPrice}</del>
-        <strong>₹${discount.discountedPrice}</strong>
-        ${discount.discountPercent > 0 ? `<span class="discount-tag">${discount.discountPercent}% OFF</span>` : ""}
-
-      <a href="booking.html?service=${encodeURIComponent(c.name)}" class="btn">Book Now</a>
-    `;
-
-    comboContainer.appendChild(card);
-  }
-});
-
 async function renderCombos() {
   if (!comboContainer) return;
+
+  comboContainer.innerHTML = "";
 
   const snapshot = await db.collection("combos")
     .where("active","==",true)
     .get();
 
-  comboContainer.innerHTML = "";
-
   for (const doc of snapshot.docs) {
     const c = doc.data();
     const discount = await getComboDiscount(c.originalPrice, activePromoCode);
@@ -394,11 +363,15 @@ async function renderCombos() {
       <h3>${c.name}</h3>
       <p>${c.description}</p>
       <p><strong>Time:</strong> ${c.time} minutes</p>
+
       <p class="price">
         <del>₹${c.originalPrice}</del>
         <strong>₹${discount.discountedPrice}</strong>
-        ${discount.discountPercent ? `<span class="discount-tag">${discount.discountPercent}% OFF</span>` : ""}
+        ${discount.discountPercent
+          ? `<span class="discount-tag">${discount.discountPercent}% OFF</span>`
+          : ""}
       </p>
+
       <a href="booking.html?service=${encodeURIComponent(c.name)}" class="btn">Book Now</a>
     `;
 
