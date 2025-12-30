@@ -364,7 +364,6 @@ db.collection("combos").where("active","==",true).onSnapshot(async snapshot => {
       <p class="price">
         <del>₹${c.originalPrice}</del>
         <strong>₹${discount.discountedPrice}</strong>
-        ${discount.discountPercent > 0 ? `<span class="discount-tag">${discount.discountPercent}% OFF</span>` : ""}
         ${discount.discountType ? `<span class="discount-tag">${discount.discountPercent}% OFF</span>` : ""}
       </p>
 
