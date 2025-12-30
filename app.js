@@ -350,7 +350,7 @@ db.collection("combos").where("active","==",true).onSnapshot(async snapshot => {
   for (const doc of snapshot.docs) {
     const c = doc.data();
 
-    const discount = await getComboDiscount(c.originalPrice);
+    const discount = await getComboDiscount(c.originalPrice, activePromoCode);
 
     const card = document.createElement("div");
     card.className = "card combo-card";
@@ -372,6 +372,42 @@ db.collection("combos").where("active","==",true).onSnapshot(async snapshot => {
     comboContainer.appendChild(card);
   }
 });
+
+async function renderCombos() {
+  if (!comboContainer) return;
+
+  const snapshot = await db.collection("combos")
+    .where("active","==",true)
+    .get();
+
+  comboContainer.innerHTML = "";
+
+  for (const doc of snapshot.docs) {
+    const c = doc.data();
+    const discount = await getComboDiscount(c.originalPrice, activePromoCode);
+
+    const card = document.createElement("div");
+    card.className = "card combo-card";
+
+    card.innerHTML = `
+      ${c.badge ? `<span class="badge">${c.badge}</span>` : ""}
+      <h3>${c.name}</h3>
+      <p>${c.description}</p>
+      <p><strong>Time:</strong> ${c.time} minutes</p>
+      <p class="price">
+        <del>₹${c.originalPrice}</del>
+        <strong>₹${discount.discountedPrice}</strong>
+        ${discount.discountPercent ? `<span class="discount-tag">${discount.discountPercent}% OFF</span>` : ""}
+      </p>
+      <a href="booking.html?service=${encodeURIComponent(c.name)}" class="btn">Book Now</a>
+    `;
+
+    comboContainer.appendChild(card);
+  }
+}
+
+// Initial load
+renderCombos();
 
 // ================= DISCOUNT ENGINE (FIXED) =================
 async function getComboDiscount(originalPrice, promoCode = null) {
@@ -437,4 +473,37 @@ async function getComboDiscount(originalPrice, promoCode = null) {
     discountPercent: appliedDiscount.percent,
     discountType: appliedDiscount.type
   };
+}
+
+// ================= PROMO UI LOGIC =================
+const promoInput = document.getElementById("promoInput");
+const applyPromoBtn = document.getElementById("applyPromo");
+const promoMsg = document.getElementById("promoMsg");
+
+let activePromoCode = null;
+
+if (applyPromoBtn) {
+  applyPromoBtn.addEventListener("click", async () => {
+    const code = promoInput.value.trim().toUpperCase();
+    if (!code) return;
+
+    const snap = await db.collection("discounts")
+      .where("type","==","promo")
+      .where("active","==",true)
+      .where("code","==",code)
+      .get();
+
+    if (snap.empty) {
+      promoMsg.textContent = "Invalid promo code";
+      promoMsg.style.color = "red";
+      activePromoCode = null;
+      renderCombos(); // reset prices
+      return;
+    }
+
+    activePromoCode = code;
+    promoMsg.textContent = "Promo applied successfully!";
+    promoMsg.style.color = "green";
+    renderCombos();
+  });
 }
