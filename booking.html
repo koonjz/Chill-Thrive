@@ -1,9 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CJP105Q5Z3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CJP105Q5Z3');
+</script>
   <meta charset="UTF-8">
   <title>Book a Session | Chill Thrive</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
 </head>
 
@@ -12,19 +23,41 @@
 <header>
   <nav class="container nav">
     <h2 class="logo">
-      <a href="index.html" class="logo-link">
-        <img src="https://i.ibb.co/gMFZYF97/chill-thrive-logo.jpg" class="logo-img">
-        Chill Thrive
-      </a>
-    </h2>
+  <a href="index.html" class="logo-link">
+    <img src="https://i.ibb.co/gMFZYF97/chill-thrive-logo.jpg" alt="Chill Thrive Logo" class="logo-img">
+    Chill Thrive
+  </a>
+</h2>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="booking.html">Booking</a></li>
+      <li><a href="awareness.html">Awareness</a></li>
+      <li><a href="founder.html">Founder</a></li>
+      <li><a href="testimonials.html">Testimonials</a></li>
+      <li><a href="gallery.html">Gallery</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
   </nav>
 </header>
 
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <h1>Book Your Recovery Session</h1>
+    <p>Select service, date & time, and confirm your booking.</p>
+  </div>
+</section>
+
+<!-- BOOKING FORM -->
 <section class="container section">
   <div class="card">
+
     <form id="bookingForm">
 
-      <h3>1. Service</h3>
+      <!-- STEP 1: SERVICE -->
+      <h3>1. Select Service / Combo</h3>
+      <label>Service</label>
       <select id="service" required>
         <option value="">Select Service</option>
         <option>Ice Bath Therapy</option>
@@ -35,7 +68,9 @@
         <option>Full Recovery Combo</option>
       </select>
 
+      <!-- Duration (Ice Bath only) -->
       <div id="duration-wrapper">
+        <label>Duration</label>
         <select id="duration">
           <option value="">Select Duration</option>
           <option value="30">30 Minutes</option>
@@ -43,23 +78,56 @@
         </select>
       </div>
 
-      <h3>2. Date & Time</h3>
-      <input type="date" id="date" required>
-      <select id="time" required>
-        <option value="">Select Time</option>
-      </select>
+      <!-- STEP 2: DATE & TIME -->
+      <h3>2. Select Date & Time Slot</h3>
 
-      <h3>3. Details</h3>
-      <input type="text" id="name" placeholder="Name" required>
-      <input type="tel" id="phone" placeholder="Phone" required>
-      <input type="email" id="email" placeholder="Email" required>
+      <label>Date</label>
+      <input type="date" id="date" required>
+
+      <label>Time Slot</label>
+      <select id="time" required>
+  <option value="">Select Time</option>
+</select>
+
+      <!-- STEP 3: USER DETAILS -->
+      <h3>3. Enter Your Details</h3>
+
+      <label>Name</label>
+      <input type="text" id="name" placeholder="Your Name" required>
+
+      <label>Phone</label>
+      <input type="tel" id="phone" placeholder="Your Phone Number" required>
+
+      <label>Email</label>
+      <input type="email" id="email" placeholder="Your Email" required>
+
+      <!-- STEP 4: PAYMENT -->
+      <h3>4. Payment</h3>
+      <p>
+        Payment can be completed via <strong>Cash at Venue</strong> or
+        <strong>QR Code</strong> provided during visit.
+      </p>
+
+      <!-- STEP 5: CONFIRM -->
+      <h3>5. Booking Confirmation</h3>
+      <p>
+        You will receive a booking confirmation on your <strong>email</strong>.
+      </p>
 
       <button class="btn" type="submit">Confirm Booking</button>
 
     </form>
+
   </div>
 </section>
 
+<footer>
+  <div class="container footer">
+    <p>© 2025 Chill Thrive</p>
+  </div>
+</footer>
+
+<!-- Firebase + JS -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="./app.js"></script>
