@@ -628,3 +628,4 @@ async function userReschedule(id, oldDate, oldTime, newDate, newTime) {
 
   alert("Booking rescheduled.");
 }
+}
