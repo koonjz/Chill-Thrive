@@ -621,36 +621,45 @@ async function confirmReschedule() {
   });
 
 // ================= HIDDEN CSV EXPORT VIA URL =================
-
-// Only run if URL matches admin-secret key
-if (window.location.href.includes("exportBookingsAdmin123")) {
-
-  db.collection("bookings")
-    .orderBy("createdAt", "desc")
-    .get()
-    .then(snapshot => {
-
-      let csv = "Service,Duration,Date,Time,Name,Phone,Email,Status,PaymentStatus\n";
-
-      snapshot.forEach(doc => {
-        const b = doc.data();
-        csv += `${b.service},${b.duration},${b.date},${b.time},${b.customer.name},${b.customer.phone},${b.customer.email},${b.status},${b.paymentStatus}\n`;
-      });
-
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `bookings_${new Date().toISOString().slice(0,10)}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      alert("Bookings CSV downloaded successfully!");
-    })
-    .catch(err => {
-      console.error("Error exporting bookings:", err);
-      alert("Failed to export bookings. Check console.");
-    });
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
 }
+const db = firebase.firestore();
+
+if (window.location.pathname.endsWith("/exportBookingsAdmin123")) {
+  exportBookingsCSV();
+}
+
+async function exportBookingsCSV() {
+  try {
+    const snapshot = await db.collection("bookings").orderBy("createdAt","desc").get();
+
+    if (snapshot.empty) {
+      alert("No bookings found");
+      return;
+    }
+
+    let csv = "Service,Duration,Date,Time,Name,Phone,Email,Status,PaymentStatus\n";
+
+    snapshot.forEach(doc => {
+      const b = doc.data();
+      csv += `${b.service},${b.duration},${b.date},${b.time},${b.customer.name},${b.customer.phone},${b.customer.email},${b.status},${b.paymentStatus}\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bookings_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    alert("Bookings CSV downloaded successfully!");
+  } catch(err) {
+    console.error("Error exporting bookings:", err);
+    alert("Failed to export bookings. Check console.");
+  }
+}
+
