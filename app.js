@@ -643,31 +643,32 @@ function exportBookingsCSV() {
   });
 }
 
-(async function () {
+// ================= HIDDEN EXPORT (SAFE & RELIABLE) =================
+document.addEventListener("DOMContentLoaded", async () => {
 
   const params = new URLSearchParams(window.location.search);
   const exportType = params.get("export");
   const key = params.get("key");
 
-  // 🔐 simple protection
   const SECRET_KEY = "CT_EXPORT_2025";
 
   if (exportType !== "bookings" || key !== SECRET_KEY) return;
 
-  const snapshot = await db.collection("bookings")
-    .orderBy("createdAt", "desc")
-    .get();
+  try {
+    const snapshot = await db.collection("bookings")
+      .orderBy("createdAt", "desc")
+      .get();
 
-  if (snapshot.empty) {
-    alert("No bookings to export");
-    return;
-  }
+    if (snapshot.empty) {
+      alert("No bookings found");
+      return;
+    }
 
-  let csv = "Service,Date,Time,Name,Phone,Email,Status,Payment\n";
+    let csv = "Service,Date,Time,Name,Phone,Email,Status,Payment\n";
 
-  snapshot.forEach(doc => {
-    const b = doc.data();
-    csv += `"${b.service}",
+    snapshot.forEach(doc => {
+      const b = doc.data();
+      csv += `"${b.service}",
 "${b.date}",
 "${b.time}",
 "${b.customer.name}",
@@ -675,20 +676,22 @@ function exportBookingsCSV() {
 "${b.customer.email}",
 "${b.status}",
 "${b.paymentStatus}"\n`;
-  });
+    });
 
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "chill-thrive-bookings.csv";
-  a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "chill-thrive-bookings.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
 
-  URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url);
 
-})();
-
-  closeReschedule();
-  alert("Booking rescheduled successfully");
-}
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Export failed. Check console.");
+  }
+});
