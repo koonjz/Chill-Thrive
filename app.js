@@ -643,48 +643,4 @@ function exportBookingsCSV() {
   });
 }
 
-// ================= HIDDEN EXPORT (NO ADMIN PAGE) =================
-document.addEventListener("DOMContentLoaded", async () => {
-
-  const params = new URLSearchParams(window.location.search);
-  const exportType = params.get("export");
-  const key = params.get("key");
-
-  const SECRET_KEY = "CT_EXPORT_2025";
-
-  if (exportType !== "bookings" || key !== SECRET_KEY) return;
-
-  try {
-    const snapshot = await db.collection("bookings")
-      .orderBy("createdAt", "desc")
-      .get();
-
-    if (snapshot.empty) {
-      alert("No bookings to export");
-      return;
-    }
-
-    let csv = "Service,Date,Time,Name,Phone,Email,Status,Payment\n";
-
-    snapshot.forEach(doc => {
-      const b = doc.data();
-      csv += `"${b.service}","${b.date}","${b.time}","${b.customer.name}","${b.customer.phone}","${b.customer.email}","${b.status}","${b.paymentStatus}"\n`;
-    });
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "chill-thrive-bookings.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    URL.revokeObjectURL(url);
-
-  } catch (err) {
-    console.error(err);
-    alert("Export failed");
-  }
-});
+<button id="hiddenExportBtn" style="display:none">Export</button>
