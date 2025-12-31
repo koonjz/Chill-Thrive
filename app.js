@@ -609,23 +609,49 @@ function promptReschedule(id, oldDate, oldTime) {
   userReschedule(id, oldDate, oldTime, newDate, newTime);
 }
 
-async function userReschedule(id, oldDate, oldTime, newDate, newTime) {
+async function userReschedule(bookingId, oldDate, oldTime, newDate, newTime) {
 
-  await db.collection("timeSlots").doc(`${oldDate}_${oldTime}`).update({
-    booked: firebase.firestore.FieldValue.increment(-1)
-  });
+  const oldSlotRef = db.collection("timeSlots").doc(`${oldDate}_${oldTime}`);
+  const newSlotRef = db.collection("timeSlots").doc(`${newDate}_${newTime}`);
+  const bookingRef = db.collection("bookings").doc(bookingId);
 
-  await db.collection("timeSlots").doc(`${newDate}_${newTime}`).set({
-    booked: firebase.firestore.FieldValue.increment(1),
-    capacity: 5
-  }, { merge: true });
+  try {
+    await db.runTransaction(async tx => {
 
-  await db.collection("bookings").doc(id).update({
-    date: newDate,
-    time: newTime,
-    status: "rescheduled",
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
+      const newSlotSnap = await tx.get(newSlotRef);
+      const capacity = newSlotSnap.exists ? newSlotSnap.data().capacity : 5;
+      const booked = newSlotSnap.exists ? newSlotSnap.data().booked : 0;
 
-  alert("Booking rescheduled.");
+      // ❌ Slot full → stop
+      if (booked >= capacity) {
+        throw "Selected slot is full";
+      }
+
+      // ✅ Release old slot
+      tx.update(oldSlotRef, {
+        booked: firebase.firestore.FieldValue.increment(-1)
+      });
+
+      // ✅ Reserve new slot
+      tx.set(newSlotRef, {
+        date: newDate,
+        time: newTime,
+        capacity: 5,
+        booked: firebase.firestore.FieldValue.increment(1)
+      }, { merge: true });
+
+      // ✅ Update booking
+      tx.update(bookingRef, {
+        date: newDate,
+        time: newTime,
+        status: "rescheduled",
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+
+    alert("Booking rescheduled successfully");
+
+  } catch (err) {
+    alert(err || "Reschedule failed");
+  }
 }
