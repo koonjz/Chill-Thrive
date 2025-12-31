@@ -643,7 +643,7 @@ function exportBookingsCSV() {
   });
 }
 
-// ================= HIDDEN EXPORT (SAFE & RELIABLE) =================
+// ================= HIDDEN EXPORT (NO ADMIN PAGE) =================
 document.addEventListener("DOMContentLoaded", async () => {
 
   const params = new URLSearchParams(window.location.search);
@@ -660,7 +660,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       .get();
 
     if (snapshot.empty) {
-      alert("No bookings found");
+      alert("No bookings to export");
       return;
     }
 
@@ -690,8 +690,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     URL.revokeObjectURL(url);
 
-  } catch (err) {
-    console.error("Export failed:", err);
-    alert("Export failed. Check console.");
+  } catch (e) {
+    console.error(e);
+    alert("Export failed");
   }
 });
+  closeReschedule();
+  alert("Booking rescheduled successfully");
+}
