@@ -273,6 +273,22 @@ a.card{
   margin-top:8px;
 }
 
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  width: 300px;
+  border-radius: 8px;
+}
+
 /* ================= WHY ================= */
 .why{
   background:var(--light-blue);
@@ -405,4 +421,5 @@ select{
   padding:10px 16px;
   border-radius:50%;
 }
+
 
