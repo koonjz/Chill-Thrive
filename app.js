@@ -620,46 +620,37 @@ async function confirmReschedule() {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
-// ================= EXPORT BOOKINGS CSV VIA URL =================
-(function exportBookingsByURL() {
-  const params = new URLSearchParams(window.location.search);
-  const exportCode = params.get("export");
+// ================= HIDDEN CSV EXPORT VIA URL =================
 
-  // ⚠ Only proceed if code matches
-  if (exportCode !== "csvadmin123") return;
+// Only run if URL matches admin-secret key
+if (window.location.href.includes("exportBookingsAdmin123")) {
 
   db.collection("bookings")
     .orderBy("createdAt", "desc")
     .get()
     .then(snapshot => {
-      if (snapshot.empty) {
-        alert("No bookings found");
-        return;
-      }
 
-      // CSV header
-      let csv = "Service,Duration,Date,Time,Name,Phone,Email,Status,Payment Status\n";
+      let csv = "Service,Duration,Date,Time,Name,Phone,Email,Status,PaymentStatus\n";
 
       snapshot.forEach(doc => {
         const b = doc.data();
         csv += `${b.service},${b.duration},${b.date},${b.time},${b.customer.name},${b.customer.phone},${b.customer.email},${b.status},${b.paymentStatus}\n`;
       });
 
-      // Download CSV
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
 
       const a = document.createElement("a");
       a.href = url;
-      a.download = `bookings_${new Date().toISOString().split("T")[0]}.csv`;
+      a.download = `bookings_${new Date().toISOString().slice(0,10)}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
 
-      alert("Bookings exported successfully");
+      alert("Bookings CSV downloaded successfully!");
     })
     .catch(err => {
-      console.error("Export error:", err);
-      alert("Error exporting bookings: " + err.message);
+      console.error("Error exporting bookings:", err);
+      alert("Failed to export bookings. Check console.");
     });
-})();
+}
