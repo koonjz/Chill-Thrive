@@ -668,14 +668,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     snapshot.forEach(doc => {
       const b = doc.data();
-      csv += `"${b.service}",
-"${b.date}",
-"${b.time}",
-"${b.customer.name}",
-"${b.customer.phone}",
-"${b.customer.email}",
-"${b.status}",
-"${b.paymentStatus}"\n`;
+      csv += `"${b.service}","${b.date}","${b.time}","${b.customer.name}","${b.customer.phone}","${b.customer.email}","${b.status}","${b.paymentStatus}"\n`;
     });
 
     const blob = new Blob([csv], { type: "text/csv" });
@@ -690,11 +683,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     URL.revokeObjectURL(url);
 
-  } catch (e) {
-    console.error(e);
+  } catch (err) {
+    console.error(err);
     alert("Export failed");
   }
 });
-  closeReschedule();
-  alert("Booking rescheduled successfully");
-}
