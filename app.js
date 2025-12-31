@@ -523,31 +523,6 @@ if (applyPromoBtn) {
   });
 }
 
-if (userIsAdmin) {
-  document.getElementById("exportBtn").style.display = "block";
-}
-
-function exportBookingsCSV() {
-
-  db.collection("bookings").get().then(snapshot => {
-
-    let csv = "Service,Date,Time,Name,Phone,Email,Status\n";
-
-    snapshot.forEach(doc => {
-      const b = doc.data();
-      csv += `${b.service},${b.date},${b.time},${b.customer.name},${b.customer.phone},${b.customer.email},${b.status}\n`;
-    });
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "bookings.csv";
-    a.click();
-  });
-}
-
 // ================= USER BOOKING MANAGEMENT =================
 const lookupBtn = document.getElementById("lookupBooking");
 const userBookings = document.getElementById("userBookings");
