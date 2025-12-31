@@ -578,59 +578,48 @@ async function userCancel(id, date, time) {
   alert("Booking cancelled.");
 }
 
+let rescheduleData = {};
+
 function promptReschedule(id, oldDate, oldTime) {
-
-  const newDate = prompt("Enter new date (YYYY-MM-DD)");
-  const newTime = prompt("Enter new time slot [(07:00 – 10:00), (10:00 – 01:00), (15:00 – 18:00), (18:00 – 21:00)]");
-
-  if (!newDate || !newTime) return;
-
-  userReschedule(id, oldDate, oldTime, newDate, newTime);
+  rescheduleData = { id, oldDate, oldTime };
+  document.getElementById("rescheduleModal").style.display = "flex";
 }
 
-async function userReschedule(bookingId, oldDate, oldTime, newDate, newTime) {
+function closeReschedule() {
+  document.getElementById("rescheduleModal").style.display = "none";
+}
 
-  const oldSlotRef = db.collection("timeSlots").doc(`${oldDate}_${oldTime}`);
-  const newSlotRef = db.collection("timeSlots").doc(`${newDate}_${newTime}`);
-  const bookingRef = db.collection("bookings").doc(bookingId);
+async function confirmReschedule() {
 
-  try {
-    await db.runTransaction(async tx => {
+  const newDate = document.getElementById("newDate").value;
+  const newTime = document.getElementById("newTime").value;
 
-      const newSlotSnap = await tx.get(newSlotRef);
-      const capacity = newSlotSnap.exists ? newSlotSnap.data().capacity : 5;
-      const booked = newSlotSnap.exists ? newSlotSnap.data().booked : 0;
-
-      // ❌ Slot full → stop
-      if (booked >= capacity) {
-        throw "Selected slot is full";
-      }
-
-      // ✅ Release old slot
-      tx.update(oldSlotRef, {
-        booked: firebase.firestore.FieldValue.increment(-1)
-      });
-
-      // ✅ Reserve new slot
-      tx.set(newSlotRef, {
-        date: newDate,
-        time: newTime,
-        capacity: 5,
-        booked: firebase.firestore.FieldValue.increment(1)
-      }, { merge: true });
-
-      // ✅ Update booking
-      tx.update(bookingRef, {
-        date: newDate,
-        time: newTime,
-        status: "rescheduled",
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    });
-
-    alert("Booking rescheduled successfully");
-
-  } catch (err) {
-    alert(err || "Reschedule failed");
+  if (!newDate || !newTime) {
+    alert("Select date and time");
+    return;
   }
+
+  const { id, oldDate, oldTime } = rescheduleData;
+
+  // free old slot
+  await db.collection("timeSlots").doc(`${oldDate}_${oldTime}`).update({
+    booked: firebase.firestore.FieldValue.increment(-1)
+  });
+
+  // book new slot
+  await db.collection("timeSlots").doc(`${newDate}_${newTime}`).set({
+    capacity: 5,
+    booked: firebase.firestore.FieldValue.increment(1)
+  }, { merge: true });
+
+  // update booking
+  await db.collection("bookings").doc(id).update({
+    date: newDate,
+    time: newTime,
+    status: "rescheduled",
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  closeReschedule();
+  alert("Booking rescheduled successfully");
 }
