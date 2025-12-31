@@ -523,6 +523,10 @@ if (applyPromoBtn) {
   });
 }
 
+if (userIsAdmin) {
+  document.getElementById("exportBtn").style.display = "block";
+}
+
 function exportBookingsCSV() {
 
   db.collection("bookings").get().then(snapshot => {
