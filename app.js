@@ -621,12 +621,7 @@ async function confirmReschedule() {
   });
 
 // ================= HIDDEN CSV EXPORT VIA URL =================
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.firestore();
-
-if (window.location.pathname.endsWith("/exportBookingsAdmin123")) {
+if (window.location.pathname.endsWith("exportBookingsAdmin123")) {
   exportBookingsCSV();
 }
 
