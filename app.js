@@ -245,26 +245,28 @@ function rescheduleBooking(bookingId, oldDate, oldTime, newDate, newTime) {
   alert("Booking rescheduled");
 }
 
-// ================= CONTACT PAGE LOGIC =================
+// ================= CONTACT PAGE LOGIC (FIXED) =================
 const contactForm = document.getElementById("contactForm");
 
 if (contactForm) {
-  contactForm.addEventListener("submit", function (e) {
+  contactForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    
-    // It is safer to use IDs here too, but your array method might work if order never changes
-    db.collection("messages").add({
-      name: document.getElementById("contact-name") ? document.getElementById("contact-name").value : this[0].value,
-      phone: document.getElementById("contact-phone") ? document.getElementById("contact-phone").value : this[1].value,
-      message: document.getElementById("contact-msg") ? document.getElementById("contact-msg").value : this[2].value,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
+
+    try {
+      await db.collection("messages").add({
+        name: document.getElementById("contact-name").value,
+        phone: document.getElementById("contact-phone").value,
+        message: document.getElementById("contact-msg").value,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
       alert("Message sent successfully!");
       contactForm.reset();
-    }).catch((error) => {
-      console.error("Error sending message:", error);
-      alert("Error: " + error.message);
-    });
+
+    } catch (err) {
+      console.error("Firestore error:", err);
+      alert("Failed to send message");
+    }
   });
 }
 
