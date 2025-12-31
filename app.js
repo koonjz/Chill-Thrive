@@ -177,6 +177,7 @@ if (bookingForm) {
   alert("Booking confirmed!");
   bookingForm.reset();
 });
+}
 
 // ================= ADMIN BOOKING MANAGEMENT =================
 const adminBookingsContainer = document.getElementById("adminBookings");
