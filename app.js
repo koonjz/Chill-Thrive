@@ -113,94 +113,63 @@ if (dateInput && timeSelect) {
   }
 }
 
-// ================= BOOKING PAGE LOGIC =================
+// ================= BOOKING PAGE LOGIC (USER) =================
 const bookingForm = document.getElementById("bookingForm");
 
 if (bookingForm) {
-  // ===== Auto-select service & duration from URL =====
-const params = new URLSearchParams(window.location.search);
 
-const serviceParam = params.get("service");
-const durationParam = params.get("duration");
+  const params = new URLSearchParams(window.location.search);
+  const serviceSelect = document.getElementById("service");
+  const durationSelect = document.getElementById("duration");
 
-const serviceSelect = document.getElementById("service");
-const durationSelect = document.getElementById("duration");
-
-if (serviceSelect && serviceParam) {
-  serviceSelect.value = serviceParam;
-}
-
-if (durationSelect && durationParam) {
-  durationSelect.value = durationParam;
-}
-
-// ===== Show duration only for Ice Bath Therapy =====
-if (serviceSelect && durationSelect) {
+  if (params.get("service")) serviceSelect.value = params.get("service");
+  if (params.get("duration")) durationSelect.value = params.get("duration");
 
   function toggleDuration() {
-  if (serviceSelect.value === "Ice Bath Therapy") {
-    durationSelect.parentElement.style.display = "block";
-    durationSelect.required = true;
-  } else {
-    durationSelect.parentElement.style.display = "none";
-    durationSelect.required = false;
-    durationSelect.value = "";
+    if (serviceSelect.value === "Ice Bath Therapy") {
+      durationSelect.parentElement.style.display = "block";
+      durationSelect.required = true;
+    } else {
+      durationSelect.parentElement.style.display = "none";
+      durationSelect.required = false;
+      durationSelect.value = "";
+    }
   }
-}
 
-  toggleDuration(); // on page load
+  toggleDuration();
   serviceSelect.addEventListener("change", toggleDuration);
-}
 
-  bookingForm.addEventListener("submit", function (e) {
-    e.preventDefault(); // Stop page reload
+  bookingForm.addEventListener("submit", async e => {
+    e.preventDefault();
 
-    console.log("Processing booking..."); // Debugging check
-
-    // FIX: select elements explicitly using document.getElementById
     const bookingData = {
-  service: document.getElementById("service").value,
-  duration: document.getElementById("duration")?.value || "",
-  date: document.getElementById("date").value,
-  time: document.getElementById("time").value,
+      service: serviceSelect.value,
+      duration: durationSelect?.value || "",
+      date: dateInput.value,
+      time: timeSelect.value,
 
-  customer: {
-    name: document.getElementById("name").value,
-    phone: document.getElementById("phone").value,
-    email: document.getElementById("email").value
-  },
+      customer: {
+        name: name.value,
+        phone: phone.value,
+        email: email.value
+      },
 
-  status: "confirmed",          // confirmed | cancelled | rescheduled
-  paymentStatus: "pending",     // pending | paid
-  createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-};
+      status: "confirmed",
+      paymentStatus: "pending",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
 
-    console.log("Sending data:", bookingData);
+    const slotId = `${bookingData.date}_${bookingData.time}`;
 
-    db.collection("bookings").add(bookingData)
-      .then(() => {
+    await db.collection("bookings").add(bookingData);
+    await db.collection("timeSlots").doc(slotId).set({
+      booked: firebase.firestore.FieldValue.increment(1),
+      capacity: 5
+    }, { merge: true });
 
-  const selectedDate = document.getElementById("date").value;
-  const selectedTime = document.getElementById("time").value;
-
-  const slotId = `${selectedDate}_${selectedTime}`;
-
-  db.collection("timeSlots").doc(slotId).set({
-    date: selectedDate,
-    time: selectedTime,
-    capacity: 5,
-    booked: firebase.firestore.FieldValue.increment(1)
-  }, { merge: true });
-
-  alert("Booking confirmed! You will receive confirmation shortly.");
-  bookingForm.reset();
-
-})
-      .catch((error) => {
-        console.error("Error:", error);
-        alert("Error submitting booking: " + error.message);
-      });
+    alert("Booking confirmed!");
+    bookingForm.reset();
   });
 }
 
@@ -565,4 +534,90 @@ function exportBookingsCSV() {
     a.download = "bookings.csv";
     a.click();
   });
+}
+
+// ================= USER BOOKING MANAGEMENT =================
+const lookupBtn = document.getElementById("lookupBooking");
+const userBookings = document.getElementById("userBookings");
+
+if (lookupBtn) {
+  lookupBtn.addEventListener("click", async () => {
+
+    const phone = document.getElementById("lookupPhone").value;
+    const email = document.getElementById("lookupEmail").value;
+
+    userBookings.innerHTML = "";
+
+    const snap = await db.collection("bookings")
+      .where("customer.phone", "==", phone)
+      .where("customer.email", "==", email)
+      .get();
+
+    if (snap.empty) {
+      userBookings.innerHTML = "<p>No bookings found.</p>";
+      return;
+    }
+
+    snap.forEach(doc => {
+      const b = doc.data();
+
+      userBookings.innerHTML += `
+        <div class="card">
+          <p><strong>${b.service}</strong></p>
+          <p>${b.date} | ${b.time}</p>
+          <p>Status: ${b.status}</p>
+
+          ${b.status === "confirmed" ? `
+            <button onclick="userCancel('${doc.id}','${b.date}','${b.time}')">Cancel</button>
+            <button onclick="promptReschedule('${doc.id}','${b.date}','${b.time}')">Reschedule</button>
+          ` : ""}
+        </div>
+      `;
+    });
+  });
+}
+
+async function userCancel(id, date, time) {
+
+  await db.collection("bookings").doc(id).update({
+    status: "cancelled",
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  await db.collection("timeSlots").doc(`${date}_${time}`).update({
+    booked: firebase.firestore.FieldValue.increment(-1)
+  });
+
+  alert("Booking cancelled.");
+}
+
+function promptReschedule(id, oldDate, oldTime) {
+
+  const newDate = prompt("Enter new date (YYYY-MM-DD)");
+  const newTime = prompt("Enter new time slot");
+
+  if (!newDate || !newTime) return;
+
+  userReschedule(id, oldDate, oldTime, newDate, newTime);
+}
+
+async function userReschedule(id, oldDate, oldTime, newDate, newTime) {
+
+  await db.collection("timeSlots").doc(`${oldDate}_${oldTime}`).update({
+    booked: firebase.firestore.FieldValue.increment(-1)
+  });
+
+  await db.collection("timeSlots").doc(`${newDate}_${newTime}`).set({
+    booked: firebase.firestore.FieldValue.increment(1),
+    capacity: 5
+  }, { merge: true });
+
+  await db.collection("bookings").doc(id).update({
+    date: newDate,
+    time: newTime,
+    status: "rescheduled",
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  alert("Booking rescheduled.");
 }
