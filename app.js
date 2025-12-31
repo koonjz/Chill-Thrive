@@ -622,25 +622,51 @@ async function confirmReschedule() {
 
 // ================= HIDDEN EXPORT (NO ADMIN PAGE) =================
 
-function exportBookingsCSV() {
+// ================= EXPORT BOOKINGS VIA URL =================
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  
+  // If URL contains ?exportBookings=true
+  if (params.get("exportBookings") === "true") {
 
-  db.collection("bookings").get().then(snapshot => {
+    db.collection("bookings").get().then(snapshot => {
 
-    let csv = "Service,Date,Time,Name,Phone,Email,Status\n";
+      if (snapshot.empty) {
+        alert("No bookings to export.");
+        return;
+      }
 
-    snapshot.forEach(doc => {
-      const b = doc.data();
-      csv += `${b.service},${b.date},${b.time},${b.customer.name},${b.customer.phone},${b.customer.email},${b.status}\n`;
+      let csv = "Service,Duration,Date,Time,Name,Phone,Email,Status,PaymentStatus\n";
+
+      snapshot.forEach(doc => {
+        const b = doc.data();
+        csv += [
+          b.service,
+          b.duration,
+          b.date,
+          b.time,
+          b.customer.name,
+          b.customer.phone,
+          b.customer.email,
+          b.status,
+          b.paymentStatus
+        ].join(",") + "\n";
+      });
+
+      // Create a temporary download link
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "bookings.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      alert("Bookings exported successfully!");
+    }).catch(err => {
+      console.error(err);
+      alert("Error exporting bookings: " + err.message);
     });
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "bookings.csv";
-    a.click();
-  });
-}
-
-<button id="hiddenExportBtn" style="display:none">Export</button>
+  }
+})();
