@@ -159,15 +159,22 @@ if (serviceSelect && durationSelect) {
 
     // FIX: select elements explicitly using document.getElementById
     const bookingData = {
-      service: document.getElementById("service").value,
-      duration: document.getElementById("duration") ? document.getElementById("duration").value : "",
-      date: document.getElementById("date").value,
-      time: document.getElementById("time").value,
-      name: document.getElementById("name").value, 
-      phone: document.getElementById("phone").value,
-      email: document.getElementById("email").value,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp() // Better timestamp format
-    };
+  service: document.getElementById("service").value,
+  duration: document.getElementById("duration")?.value || "",
+  date: document.getElementById("date").value,
+  time: document.getElementById("time").value,
+
+  customer: {
+    name: document.getElementById("name").value,
+    phone: document.getElementById("phone").value,
+    email: document.getElementById("email").value
+  },
+
+  status: "confirmed",          // confirmed | cancelled | rescheduled
+  paymentStatus: "pending",     // pending | paid
+  createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+};
 
     console.log("Sending data:", bookingData);
 
@@ -195,6 +202,73 @@ if (serviceSelect && durationSelect) {
         alert("Error submitting booking: " + error.message);
       });
   });
+}
+
+// ================= ADMIN BOOKING MANAGEMENT =================
+const adminBookingsContainer = document.getElementById("adminBookings");
+
+if (adminBookingsContainer) {
+  db.collection("bookings")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(snapshot => {
+      adminBookingsContainer.innerHTML = "";
+
+      snapshot.forEach(doc => {
+        const b = doc.data();
+
+        adminBookingsContainer.innerHTML += `
+          <div class="card">
+            <p><strong>${b.service}</strong></p>
+            <p>${b.date} | ${b.time}</p>
+            <p>${b.customer.name} (${b.customer.phone})</p>
+            <p>Status: ${b.status}</p>
+
+            <button onclick="cancelBooking('${doc.id}','${b.date}','${b.time}')">
+              Cancel
+            </button>
+          </div>
+        `;
+      });
+    });
+}
+
+function cancelBooking(bookingId, date, time) {
+
+  db.collection("bookings").doc(bookingId).update({
+    status: "cancelled",
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  const slotId = `${date}_${time}`;
+
+  db.collection("timeSlots").doc(slotId).update({
+    booked: firebase.firestore.FieldValue.increment(-1)
+  });
+
+  alert("Booking cancelled");
+}
+
+function rescheduleBooking(bookingId, oldDate, oldTime, newDate, newTime) {
+
+  db.collection("timeSlots").doc(`${oldDate}_${oldTime}`).update({
+    booked: firebase.firestore.FieldValue.increment(-1)
+  });
+
+  db.collection("timeSlots").doc(`${newDate}_${newTime}`).set({
+    date: newDate,
+    time: newTime,
+    capacity: 5,
+    booked: firebase.firestore.FieldValue.increment(1)
+  }, { merge: true });
+
+  db.collection("bookings").doc(bookingId).update({
+    date: newDate,
+    time: newTime,
+    status: "rescheduled",
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  alert("Booking rescheduled");
 }
 
 // ================= CONTACT PAGE LOGIC =================
@@ -469,5 +543,26 @@ if (applyPromoBtn) {
     promoMsg.textContent = "Promo applied successfully!";
     promoMsg.style.color = "green";
     renderCombos();
+  });
+}
+
+function exportBookingsCSV() {
+
+  db.collection("bookings").get().then(snapshot => {
+
+    let csv = "Service,Date,Time,Name,Phone,Email,Status\n";
+
+    snapshot.forEach(doc => {
+      const b = doc.data();
+      csv += `${b.service},${b.date},${b.time},${b.customer.name},${b.customer.phone},${b.customer.email},${b.status}\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "bookings.csv";
+    a.click();
   });
 }
