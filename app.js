@@ -620,6 +620,53 @@ async function confirmReschedule() {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
+// ================= HIDDEN EXPORT (NO ADMIN PAGE) =================
+(async function () {
+
+  const params = new URLSearchParams(window.location.search);
+  const exportType = params.get("export");
+  const key = params.get("key");
+
+  // 🔐 simple protection
+  const SECRET_KEY = "CT_EXPORT_2025";
+
+  if (exportType !== "bookings" || key !== SECRET_KEY) return;
+
+  const snapshot = await db.collection("bookings")
+    .orderBy("createdAt", "desc")
+    .get();
+
+  if (snapshot.empty) {
+    alert("No bookings to export");
+    return;
+  }
+
+  let csv = "Service,Date,Time,Name,Phone,Email,Status,Payment\n";
+
+  snapshot.forEach(doc => {
+    const b = doc.data();
+    csv += `"${b.service}",
+"${b.date}",
+"${b.time}",
+"${b.customer.name}",
+"${b.customer.phone}",
+"${b.customer.email}",
+"${b.status}",
+"${b.paymentStatus}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "chill-thrive-bookings.csv";
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+})();
+
   closeReschedule();
   alert("Booking rescheduled successfully");
 }
