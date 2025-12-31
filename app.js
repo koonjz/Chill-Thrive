@@ -602,7 +602,7 @@ async function userCancel(id, date, time) {
 function promptReschedule(id, oldDate, oldTime) {
 
   const newDate = prompt("Enter new date (YYYY-MM-DD)");
-  const newTime = prompt("Enter new time slot");
+  const newTime = prompt("Enter new time slot [(07:00 – 10:00), (10:00 – 01:00), (15:00 – 18:00), (18:00 – 21:00)]");
 
   if (!newDate || !newTime) return;
 
