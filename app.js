@@ -140,38 +140,43 @@ if (bookingForm) {
   serviceSelect.addEventListener("change", toggleDuration);
 
   bookingForm.addEventListener("submit", async e => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const bookingData = {
-      service: serviceSelect.value,
-      duration: durationSelect?.value || "",
-      date: dateInput.value,
-      time: timeSelect.value,
+  const bookingData = {
+    service: serviceSelect.value,
+    duration: durationSelect?.value || "",
+    date: dateInput.value,
+    time: timeSelect.value,
 
-      customer: {
-        name: name.value,
-        phone: phone.value,
-        email: email.value
-      },
+    customer: {
+      name: document.getElementById("name").value,
+      phone: document.getElementById("phone").value,
+      email: document.getElementById("email").value
+    },
 
-      status: "confirmed",
-      paymentStatus: "pending",
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
+    status: "confirmed",
+    paymentStatus: "pending",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
 
-    const slotId = `${bookingData.date}_${bookingData.time}`;
+  if (!bookingData.date || !bookingData.time) {
+    alert("Please select date and time");
+    return;
+  }
 
-    await db.collection("bookings").add(bookingData);
-    await db.collection("timeSlots").doc(slotId).set({
-      booked: firebase.firestore.FieldValue.increment(1),
-      capacity: 5
-    }, { merge: true });
+  const slotId = `${bookingData.date}_${bookingData.time}`;
 
-    alert("Booking confirmed!");
-    bookingForm.reset();
-  });
-}
+  await db.collection("bookings").add(bookingData);
+
+  await db.collection("timeSlots").doc(slotId).set({
+    booked: firebase.firestore.FieldValue.increment(1),
+    capacity: 5
+  }, { merge: true });
+
+  alert("Booking confirmed!");
+  bookingForm.reset();
+});
 
 // ================= ADMIN BOOKING MANAGEMENT =================
 const adminBookingsContainer = document.getElementById("adminBookings");
