@@ -620,53 +620,46 @@ async function confirmReschedule() {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
-// ================= HIDDEN EXPORT (NO ADMIN PAGE) =================
-
-// ================= EXPORT BOOKINGS VIA URL =================
-(function() {
+// ================= EXPORT BOOKINGS CSV VIA URL =================
+(function exportBookingsByURL() {
   const params = new URLSearchParams(window.location.search);
-  
-  // If URL contains ?exportBookings=true
-  if (params.get("exportBookings") === "true") {
+  const exportCode = params.get("export");
 
-    db.collection("bookings").get().then(snapshot => {
+  // ⚠ Only proceed if code matches
+  if (exportCode !== "csvadmin123") return;
 
+  db.collection("bookings")
+    .orderBy("createdAt", "desc")
+    .get()
+    .then(snapshot => {
       if (snapshot.empty) {
-        alert("No bookings to export.");
+        alert("No bookings found");
         return;
       }
 
-      let csv = "Service,Duration,Date,Time,Name,Phone,Email,Status,PaymentStatus\n";
+      // CSV header
+      let csv = "Service,Duration,Date,Time,Name,Phone,Email,Status,Payment Status\n";
 
       snapshot.forEach(doc => {
         const b = doc.data();
-        csv += [
-          b.service,
-          b.duration,
-          b.date,
-          b.time,
-          b.customer.name,
-          b.customer.phone,
-          b.customer.email,
-          b.status,
-          b.paymentStatus
-        ].join(",") + "\n";
+        csv += `${b.service},${b.duration},${b.date},${b.time},${b.customer.name},${b.customer.phone},${b.customer.email},${b.status},${b.paymentStatus}\n`;
       });
 
-      // Create a temporary download link
+      // Download CSV
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
+
       const a = document.createElement("a");
       a.href = url;
-      a.download = "bookings.csv";
+      a.download = `bookings_${new Date().toISOString().split("T")[0]}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
 
-      alert("Bookings exported successfully!");
-    }).catch(err => {
-      console.error(err);
+      alert("Bookings exported successfully");
+    })
+    .catch(err => {
+      console.error("Export error:", err);
       alert("Error exporting bookings: " + err.message);
     });
-  }
 })();
