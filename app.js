@@ -117,6 +117,12 @@ if (dateInput && timeSelect) {
 const bookingForm = document.getElementById("bookingForm");
 const manageForm = document.getElementById("manageForm");
 
+if (manageForm) {
+  manageForm.addEventListener("submit", e => {
+    e.preventDefault(); // ⛔ stop page refresh
+  });
+}
+
 if (bookingForm) {
 
   const params = new URLSearchParams(window.location.search);
@@ -566,21 +572,23 @@ if (lookupBtn) {
 }
 
 async function userCancel(id, date, time) {
+  try {
+    await db.collection("bookings").doc(id).update({
+      status: "cancelled",
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
 
-  await db.collection("bookings").doc(id).update({
-    status: "cancelled",
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
+    await db.collection("timeSlots").doc(`${date}_${time}`).update({
+      booked: firebase.firestore.FieldValue.increment(-1)
+    });
 
-  await db.collection("timeSlots").doc(`${date}_${time}`).update({
-    booked: firebase.firestore.FieldValue.increment(-1)
-  });
+    alert("Booking cancelled.");
+    document.getElementById("manageForm").reset(); // ✅ reset ONLY manage form
 
-  alert("Booking cancelled.");
-
-  // ✅ RESET UI
-  if (manageForm) manageForm.reset();
-  document.getElementById("userBookings").innerHTML = "";
+  } catch (err) {
+    console.error(err);
+    alert("Failed to cancel booking");
+  }
 }
 
 let rescheduleData = {};
