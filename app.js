@@ -800,8 +800,6 @@ if (founderContainer) {
 
 const quoteBox = document.getElementById("quoteBox");
 
-const quoteBox = document.getElementById("quoteBox");
-
 if (quoteBox) {
   const page =
     location.pathname.includes("founder") ? "founder" :
