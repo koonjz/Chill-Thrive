@@ -113,7 +113,7 @@ if (dateInput && timeSelect) {
   }
 }
 
-// ================= RESCHEDULE SLOT REAL-TIME LOGIC =================
+// ================= RESCHEDULE SLOT CAPACITY + REAL-TIME LOGIC =================
 const newDateInput = document.getElementById("newDate");
 const newTimeSelect = document.getElementById("newTime");
 
@@ -122,17 +122,31 @@ if (newDateInput && newTimeSelect) {
   const today = new Date().toISOString().split("T")[0];
   newDateInput.setAttribute("min", today);
 
+  const defaultSlots = [
+    "07:00 – 10:00",
+    "10:00 – 13:00",
+    "15:00 – 18:00",
+    "18:00 – 21:00"
+  ];
+
+  const slotTimings = {
+    "07:00 – 10:00": 7,
+    "10:00 – 13:00": 10,
+    "15:00 – 18:00": 15,
+    "18:00 – 21:00": 18
+  };
+
   let rescheduleToken = 0;
 
   newDateInput.addEventListener("change", () => {
-    const selectedDate = newDateInput.value;
-    if (!selectedDate) return;
-    loadRescheduleSlots(selectedDate);
+    if (!newDateInput.value) return;
+    loadRescheduleSlots(newDateInput.value);
   });
 
   function loadRescheduleSlots(selectedDate) {
+
     rescheduleToken++;
-    const currentToken = rescheduleToken;
+    const token = rescheduleToken;
 
     newTimeSelect.innerHTML = `<option value="">Select Time</option>`;
     newDateInput.setCustomValidity("");
@@ -140,7 +154,7 @@ if (newDateInput && newTimeSelect) {
     const now = new Date();
     const isToday = selectedDate === now.toISOString().split("T")[0];
 
-    // ⛔ All slots passed today
+    // ❌ All slots passed today
     if (isToday) {
       const allPassed = defaultSlots.every(
         slot => now.getHours() >= slotTimings[slot]
@@ -148,8 +162,10 @@ if (newDateInput && newTimeSelect) {
 
       if (allPassed) {
         newTimeSelect.innerHTML =
-          `<option value="" disabled>No slots available</option>`;
-        newDateInput.setCustomValidity("All time slots for today have already passed.");
+          `<option disabled>No slots available</option>`;
+        newDateInput.setCustomValidity(
+          "All time slots for today have already passed."
+        );
         newDateInput.reportValidity();
         return;
       }
@@ -159,15 +175,14 @@ if (newDateInput && newTimeSelect) {
     let processed = 0;
 
     defaultSlots.forEach(slot => {
-      const slotHour = slotTimings[slot];
-      if (isToday && now.getHours() >= slotHour) return;
+
+      if (isToday && now.getHours() >= slotTimings[slot]) return;
 
       const docId = `${selectedDate}_${slot}`;
 
       db.collection("timeSlots").doc(docId).get().then(doc => {
 
-        if (currentToken !== rescheduleToken) return;
-
+        if (token !== rescheduleToken) return;
         processed++;
 
         let capacity = 5;
@@ -180,19 +195,24 @@ if (newDateInput && newTimeSelect) {
 
         if (booked < capacity) {
           availableCount++;
-          const option = document.createElement("option");
-          option.value = slot;
-          option.textContent = `${slot} (${capacity - booked} slots left)`;
-          newTimeSelect.appendChild(option);
+          const opt = document.createElement("option");
+          opt.value = slot;
+          opt.textContent = `${slot} (${capacity - booked} slots left)`;
+          newTimeSelect.appendChild(opt);
         }
 
-        // ⛔ All slots full
+        // ❌ All slots full
         if (processed === defaultSlots.length && availableCount === 0) {
           newTimeSelect.innerHTML =
-            `<option value="" disabled>No slots available</option>`;
+            `<option disabled>No slots available</option>`;
           newDateInput.setCustomValidity("No slots available on this date.");
           newDateInput.reportValidity();
         }
+
+        if (availableCount > 0) {
+          newDateInput.setCustomValidity("");
+        }
+
       });
     });
   }
