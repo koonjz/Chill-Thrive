@@ -113,6 +113,91 @@ if (dateInput && timeSelect) {
   }
 }
 
+// ================= RESCHEDULE SLOT REAL-TIME LOGIC =================
+const newDateInput = document.getElementById("newDate");
+const newTimeSelect = document.getElementById("newTime");
+
+if (newDateInput && newTimeSelect) {
+
+  const today = new Date().toISOString().split("T")[0];
+  newDateInput.setAttribute("min", today);
+
+  let rescheduleToken = 0;
+
+  newDateInput.addEventListener("change", () => {
+    const selectedDate = newDateInput.value;
+    if (!selectedDate) return;
+    loadRescheduleSlots(selectedDate);
+  });
+
+  function loadRescheduleSlots(selectedDate) {
+    rescheduleToken++;
+    const currentToken = rescheduleToken;
+
+    newTimeSelect.innerHTML = `<option value="">Select Time</option>`;
+    newDateInput.setCustomValidity("");
+
+    const now = new Date();
+    const isToday = selectedDate === now.toISOString().split("T")[0];
+
+    // ⛔ All slots passed today
+    if (isToday) {
+      const allPassed = defaultSlots.every(
+        slot => now.getHours() >= slotTimings[slot]
+      );
+
+      if (allPassed) {
+        newTimeSelect.innerHTML =
+          `<option value="" disabled>No slots available</option>`;
+        newDateInput.setCustomValidity("All time slots for today have already passed.");
+        newDateInput.reportValidity();
+        return;
+      }
+    }
+
+    let availableCount = 0;
+    let processed = 0;
+
+    defaultSlots.forEach(slot => {
+      const slotHour = slotTimings[slot];
+      if (isToday && now.getHours() >= slotHour) return;
+
+      const docId = `${selectedDate}_${slot}`;
+
+      db.collection("timeSlots").doc(docId).get().then(doc => {
+
+        if (currentToken !== rescheduleToken) return;
+
+        processed++;
+
+        let capacity = 5;
+        let booked = 0;
+
+        if (doc.exists) {
+          capacity = doc.data().capacity;
+          booked = doc.data().booked;
+        }
+
+        if (booked < capacity) {
+          availableCount++;
+          const option = document.createElement("option");
+          option.value = slot;
+          option.textContent = `${slot} (${capacity - booked} slots left)`;
+          newTimeSelect.appendChild(option);
+        }
+
+        // ⛔ All slots full
+        if (processed === defaultSlots.length && availableCount === 0) {
+          newTimeSelect.innerHTML =
+            `<option value="" disabled>No slots available</option>`;
+          newDateInput.setCustomValidity("No slots available on this date.");
+          newDateInput.reportValidity();
+        }
+      });
+    });
+  }
+}
+
 // ================= BOOKING PAGE LOGIC (USER) =================
 const bookingForm = document.getElementById("bookingForm");
 const manageForm = document.getElementById("manageForm");
