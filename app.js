@@ -115,6 +115,7 @@ if (dateInput && timeSelect) {
 
 // ================= BOOKING PAGE LOGIC (USER) =================
 const bookingForm = document.getElementById("bookingForm");
+const manageForm = document.getElementById("manageForm");
 
 if (bookingForm) {
 
@@ -576,6 +577,10 @@ async function userCancel(id, date, time) {
   });
 
   alert("Booking cancelled.");
+
+  // ✅ RESET UI
+  if (manageForm) manageForm.reset();
+  document.getElementById("userBookings").innerHTML = "";
 }
 
 let rescheduleData = {};
@@ -601,24 +606,26 @@ async function confirmReschedule() {
 
   const { id, oldDate, oldTime } = rescheduleData;
 
-  // free old slot
   await db.collection("timeSlots").doc(`${oldDate}_${oldTime}`).update({
     booked: firebase.firestore.FieldValue.increment(-1)
   });
 
-  // book new slot
   await db.collection("timeSlots").doc(`${newDate}_${newTime}`).set({
     capacity: 5,
     booked: firebase.firestore.FieldValue.increment(1)
   }, { merge: true });
 
-  // update booking
   await db.collection("bookings").doc(id).update({
     date: newDate,
     time: newTime,
     status: "rescheduled",
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
-    closeReschedule();
-  alert("Booking rescheduled successfully");
+
+  alert("Booking rescheduled.");
+
+  // ✅ RESET UI
+  closeReschedule();
+  if (manageForm) manageForm.reset();
+  document.getElementById("userBookings").innerHTML = "";
 }
