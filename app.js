@@ -619,3 +619,6 @@ async function confirmReschedule() {
     status: "rescheduled",
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   });
+    closeReschedule();
+  alert("Booking rescheduled successfully");
+}
