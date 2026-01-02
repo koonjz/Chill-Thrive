@@ -790,6 +790,18 @@ window.exportBookings = async function () {
   downloadCSV(rows, "bookings.csv");
 };
 
+function downloadCSV(rows, filename) {
+  const csv = rows
+    .map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(","))
+    .join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
 document.addEventListener("keydown", e => {
   if (e.ctrlKey && e.shiftKey && e.key === "E") {
     exportBookings();
