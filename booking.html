@@ -169,8 +169,15 @@
       <option>18:00 – 21:00</option>
     </select>
 
-    <button type="button" onclick="confirmReschedule()">Confirm</button>
-    <button type="button" onclick="closeReschedule()">Cancel</button>
+    <button type="button"
+        onclick="userCancel('${doc.id}','${b.date}','${b.time}')">
+  Cancel
+</button>
+
+<button type="button"
+        onclick="promptReschedule('${doc.id}','${b.date}','${b.time}')">
+  Reschedule
+</button>
   </div>
 </div>
 
