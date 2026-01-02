@@ -158,16 +158,12 @@
     <h3>Reschedule Booking</h3>
 
     <label>New Date</label>
-    <input type="date" id="newDate">
+    <input type="date" id="newDate" required>
 
     <label>New Time Slot</label>
-    <select id="newTime">
-      <option value="">Select Time</option>
-      <option>07:00 – 10:00</option>
-      <option>10:00 – 13:00</option>
-      <option>15:00 – 18:00</option>
-      <option>18:00 – 21:00</option>
-    </select>
+    <select id="newTime" required>
+  <option value="">Select Time</option>
+</select>
 
 <button type="button" onclick="confirmReschedule()">
   Confirm Reschedule
