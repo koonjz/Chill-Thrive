@@ -745,6 +745,81 @@ async function confirmReschedule() {
   document.getElementById("userBookings").innerHTML = "";
 }
 
+const awarenessContainer = document.getElementById("awarenessContent");
+
+if (awarenessContainer) {
+  db.collection("awareness")
+    .where("active","==",true)
+    .orderBy("order")
+    .onSnapshot(snapshot => {
+      awarenessContainer.innerHTML = "";
+
+      snapshot.forEach(doc => {
+        const a = doc.data();
+
+        awarenessContainer.innerHTML += `
+          <article>
+            <h2 class="section-title">${a.title}</h2>
+
+            ${a.content.map(p => `<p>${p}</p>`).join("")}
+
+            ${a.list?.length
+              ? `<ul>${a.list.map(i=>`<li>${i}</li>`).join("")}</ul>`
+              : ""}
+          </article>
+        `;
+      });
+    });
+}
+
+const founderContainer = document.getElementById("founderContent");
+
+if (founderContainer) {
+  db.collection("founder").doc("profile").onSnapshot(doc => {
+    if (!doc.exists) return;
+    const f = doc.data();
+
+    founderContainer.innerHTML = `
+      <div class="card">
+        <img src="${f.image}" alt="Founder">
+      </div>
+
+      <div class="card">
+        <h3>Founder Story</h3>
+        ${f.story.map(p=>`<p>${p}</p>`).join("")}
+
+        <h3>Mission</h3>
+        <p>${f.mission}</p>
+
+        <h3>Core Values</h3>
+        <ul>${f.values.map(v=>`<li>${v}</li>`).join("")}</ul>
+      </div>
+    `;
+  });
+}
+
+const quoteBox = document.getElementById("quoteBox");
+
+const quoteBox = document.getElementById("quoteBox");
+
+if (quoteBox) {
+  const page =
+    location.pathname.includes("founder") ? "founder" :
+    location.pathname.includes("awareness") ? "awareness" :
+    "home";
+
+  db.collection("quotes")
+    .where("active","==",true)
+    .where("page","==",page)
+    .limit(1)
+    .onSnapshot(snapshot => {
+      snapshot.forEach(doc => {
+        const q = doc.data();
+        quoteBox.innerHTML = `“${q.text}”`;
+      });
+    });
+}
+
 window.exportBookings = async function () {
 
   const snapshot = await db.collection("bookings")
