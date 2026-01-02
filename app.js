@@ -744,3 +744,48 @@ async function confirmReschedule() {
   if (manageForm) manageForm.reset();
   document.getElementById("userBookings").innerHTML = "";
 }
+
+window.exportBookings = async function () {
+
+  const snapshot = await db.collection("bookings")
+    .orderBy("createdAt", "desc")
+    .get();
+
+  if (snapshot.empty) {
+    alert("No bookings found");
+    return;
+  }
+
+  const rows = [
+    [
+      "Service",
+      "Duration",
+      "Date",
+      "Time",
+      "Name",
+      "Phone",
+      "Email",
+      "Status",
+      "Payment Status",
+      "Created At"
+    ]
+  ];
+
+  snapshot.forEach(doc => {
+    const b = doc.data();
+    rows.push([
+      b.service,
+      b.duration || "",
+      b.date,
+      b.time,
+      b.customer?.name || "",
+      b.customer?.phone || "",
+      b.customer?.email || "",
+      b.status,
+      b.paymentStatus,
+      b.createdAt?.toDate().toLocaleString() || ""
+    ]);
+  });
+
+  downloadCSV(rows, "bookings.csv");
+};
