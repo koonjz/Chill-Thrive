@@ -114,13 +114,15 @@ if (dateInput && timeSelect) {
 }
 
 // ================= RESCHEDULE SLOT CAPACITY + REAL-TIME LOGIC =================
-const newDateInput = document.getElementById("newDate");
-const newTimeSelect = document.getElementById("newTime");
+function setupRescheduleSlotLogic() {
 
-if (newDateInput && newTimeSelect) {
+  const newDateInput = document.getElementById("newDate");
+  const newTimeSelect = document.getElementById("newTime");
+
+  if (!newDateInput || !newTimeSelect) return;
 
   const today = new Date().toISOString().split("T")[0];
-  newDateInput.setAttribute("min", today);
+  newDateInput.min = today;
 
   const defaultSlots = [
     "07:00 – 10:00",
@@ -136,28 +138,27 @@ if (newDateInput && newTimeSelect) {
     "18:00 – 21:00": 18
   };
 
-  let rescheduleToken = 0;
+  let token = 0;
 
-  newDateInput.addEventListener("change", () => {
-    if (!newDateInput.value) return;
+  newDateInput.onchange = () => {
     loadRescheduleSlots(newDateInput.value);
-  });
+  };
 
   function loadRescheduleSlots(selectedDate) {
+    if (!selectedDate) return;
 
-    rescheduleToken++;
-    const token = rescheduleToken;
+    token++;
+    const current = token;
 
     newTimeSelect.innerHTML = `<option value="">Select Time</option>`;
     newDateInput.setCustomValidity("");
 
     const now = new Date();
-    const isToday = selectedDate === now.toISOString().split("T")[0];
+    const isToday = selectedDate === today;
 
-    // ❌ All slots passed today
     if (isToday) {
       const allPassed = defaultSlots.every(
-        slot => now.getHours() >= slotTimings[slot]
+        s => now.getHours() >= slotTimings[s]
       );
 
       if (allPassed) {
@@ -171,49 +172,46 @@ if (newDateInput && newTimeSelect) {
       }
     }
 
-    let availableCount = 0;
+    let available = 0;
     let processed = 0;
 
     defaultSlots.forEach(slot => {
 
       if (isToday && now.getHours() >= slotTimings[slot]) return;
 
-      const docId = `${selectedDate}_${slot}`;
+      db.collection("timeSlots")
+        .doc(`${selectedDate}_${slot}`)
+        .get()
+        .then(doc => {
 
-      db.collection("timeSlots").doc(docId).get().then(doc => {
+          if (current !== token) return;
+          processed++;
 
-        if (token !== rescheduleToken) return;
-        processed++;
+          let capacity = 5;
+          let booked = 0;
 
-        let capacity = 5;
-        let booked = 0;
+          if (doc.exists) {
+            capacity = doc.data().capacity;
+            booked = doc.data().booked;
+          }
 
-        if (doc.exists) {
-          capacity = doc.data().capacity;
-          booked = doc.data().booked;
-        }
+          if (booked < capacity) {
+            available++;
+            const opt = document.createElement("option");
+            opt.value = slot;
+            opt.textContent = `${slot} (${capacity - booked} slots left)`;
+            newTimeSelect.appendChild(opt);
+          }
 
-        if (booked < capacity) {
-          availableCount++;
-          const opt = document.createElement("option");
-          opt.value = slot;
-          opt.textContent = `${slot} (${capacity - booked} slots left)`;
-          newTimeSelect.appendChild(opt);
-        }
-
-        // ❌ All slots full
-        if (processed === defaultSlots.length && availableCount === 0) {
-          newTimeSelect.innerHTML =
-            `<option disabled>No slots available</option>`;
-          newDateInput.setCustomValidity("No slots available on this date.");
-          newDateInput.reportValidity();
-        }
-
-        if (availableCount > 0) {
-          newDateInput.setCustomValidity("");
-        }
-
-      });
+          if (processed === defaultSlots.length && available === 0) {
+            newTimeSelect.innerHTML =
+              `<option disabled>No slots available</option>`;
+            newDateInput.setCustomValidity(
+              "No slots available on this date."
+            );
+            newDateInput.reportValidity();
+          }
+        });
     });
   }
 }
@@ -700,7 +698,11 @@ let rescheduleData = {};
 
 function promptReschedule(id, oldDate, oldTime) {
   rescheduleData = { id, oldDate, oldTime };
-  document.getElementById("rescheduleModal").style.display = "flex";
+
+  const modal = document.getElementById("rescheduleModal");
+  modal.style.display = "flex";
+
+  setupRescheduleSlotLogic(); // 🔑 attach logic AFTER modal opens
 }
 
 function closeReschedule() {
