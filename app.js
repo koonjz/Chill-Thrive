@@ -745,27 +745,39 @@ async function confirmReschedule() {
   document.getElementById("userBookings").innerHTML = "";
 }
 
+// ================= AWARENESS PAGE CONTENT =================
 const awarenessContainer = document.getElementById("awarenessContent");
 
 if (awarenessContainer) {
-  db.collection("awareness")
-    .where("active","==",true)
+  db.collection("awarenessContent")
+    .where("visible", "==", true)
     .orderBy("order")
     .onSnapshot(snapshot => {
+
       awarenessContainer.innerHTML = "";
 
       snapshot.forEach(doc => {
-        const a = doc.data();
+        const d = doc.data();
+
+        let bodyHTML = "";
+        if (d.body) {
+          bodyHTML = d.body.map(p => `<p>${p}</p>`).join("");
+        }
+
+        let bulletsHTML = "";
+        if (d.bullets && d.bullets.length) {
+          bulletsHTML = `
+            <ul>
+              ${d.bullets.map(b => `<li>${b}</li>`).join("")}
+            </ul>
+          `;
+        }
 
         awarenessContainer.innerHTML += `
-          <article>
-            <h2 class="section-title">${a.title}</h2>
-
-            ${a.content.map(p => `<p>${p}</p>`).join("")}
-
-            ${a.list?.length
-              ? `<ul>${a.list.map(i=>`<li>${i}</li>`).join("")}</ul>`
-              : ""}
+          <article id="${d.sectionId}">
+            <h2 class="section-title">${d.title}</h2>
+            ${bodyHTML}
+            ${bulletsHTML}
           </article>
         `;
       });
