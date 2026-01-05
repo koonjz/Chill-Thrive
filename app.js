@@ -745,13 +745,13 @@ async function confirmReschedule() {
   document.getElementById("userBookings").innerHTML = "";
 }
 
-// ================= AWARENESS PAGE CONTENT (ORDERED) =================
+// ================= AWARENESS PAGE CONTENT =================
 const awarenessContainer = document.getElementById("awarenessContainer");
 
 if (awarenessContainer) {
   db.collection("awarenessContent")
     .where("visible", "==", true)
-    .orderBy("order", "asc")
+    .orderBy("order")
     .get()
     .then(snapshot => {
 
@@ -760,11 +760,11 @@ if (awarenessContainer) {
       snapshot.forEach(doc => {
         const d = doc.data();
 
-        let bodyHTML = d.body
+        const bodyHTML = d.body
           ? d.body.map(p => `<p>${p}</p>`).join("")
           : "";
 
-        let bulletsHTML = d.bullets?.length
+        const bulletsHTML = d.bullets?.length
           ? `<ul>${d.bullets.map(b => `<li>${b}</li>`).join("")}</ul>`
           : "";
 
@@ -778,10 +778,7 @@ if (awarenessContainer) {
       });
 
     })
-    .catch(err => {
-      console.error("Awareness load error:", err);
-      awarenessContainer.innerHTML = "<p>Error loading content.</p>";
-    });
+    .catch(err => console.error("Awareness error:", err));
 }
 
 const founderContainer = document.getElementById("founderContent");
