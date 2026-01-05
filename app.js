@@ -745,13 +745,13 @@ async function confirmReschedule() {
   document.getElementById("userBookings").innerHTML = "";
 }
 
-// ================= AWARENESS PAGE CONTENT =================
-// ================= AWARENESS PAGE CONTENT =================
+// ================= AWARENESS PAGE CONTENT (ORDERED) =================
 const awarenessContainer = document.getElementById("awarenessContainer");
 
 if (awarenessContainer) {
   db.collection("awarenessContent")
     .where("visible", "==", true)
+    .orderBy("order")
     .get()
     .then(snapshot => {
 
@@ -776,10 +776,6 @@ if (awarenessContainer) {
           </article>
         `;
       });
-
-      if (snapshot.empty) {
-        awarenessContainer.innerHTML = "<p>No content found.</p>";
-      }
 
     })
     .catch(err => {
