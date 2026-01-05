@@ -745,7 +745,7 @@ async function confirmReschedule() {
   document.getElementById("userBookings").innerHTML = "";
 }
 
-// ================= AWARENESS PAGE CONTENT =================
+// ================= AWARENESS PAGE CONTENT (ORDERED) =================
 const awarenessContainer = document.getElementById("awarenessContainer");
 
 if (awarenessContainer) {
@@ -760,11 +760,11 @@ if (awarenessContainer) {
       snapshot.forEach(doc => {
         const d = doc.data();
 
-        const bodyHTML = d.body
+        let bodyHTML = d.body
           ? d.body.map(p => `<p>${p}</p>`).join("")
           : "";
 
-        const bulletsHTML = d.bullets?.length
+        let bulletsHTML = d.bullets?.length
           ? `<ul>${d.bullets.map(b => `<li>${b}</li>`).join("")}</ul>`
           : "";
 
@@ -778,7 +778,10 @@ if (awarenessContainer) {
       });
 
     })
-    .catch(err => console.error("Awareness error:", err));
+    .catch(err => {
+      console.error("Awareness load error:", err);
+      awarenessContainer.innerHTML = "<p>Error loading content.</p>";
+    });
 }
 
 const founderContainer = document.getElementById("founderContent");
