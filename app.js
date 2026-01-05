@@ -746,7 +746,7 @@ async function confirmReschedule() {
 }
 
 // ================= AWARENESS PAGE CONTENT =================
-const awarenessContainer = document.getElementById("awarenessContent");
+const awarenessContainer = document.getElementById("awarenessContainer");
 
 if (awarenessContainer) {
   db.collection("awarenessContent")
