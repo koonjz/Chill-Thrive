@@ -751,7 +751,7 @@ const awarenessContainer = document.getElementById("awarenessContainer");
 if (awarenessContainer) {
   db.collection("awarenessContent")
     .where("visible", "==", true)
-    .orderBy("order")
+    .orderBy("order", "asc")
     .get()
     .then(snapshot => {
 
