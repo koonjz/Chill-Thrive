@@ -746,41 +746,45 @@ async function confirmReschedule() {
 }
 
 // ================= AWARENESS PAGE CONTENT =================
+// ================= AWARENESS PAGE CONTENT =================
 const awarenessContainer = document.getElementById("awarenessContainer");
 
 if (awarenessContainer) {
   db.collection("awarenessContent")
     .where("visible", "==", true)
-    .orderBy("order")
-    .onSnapshot(snapshot => {
+    .get()
+    .then(snapshot => {
 
       awarenessContainer.innerHTML = "";
 
       snapshot.forEach(doc => {
         const d = doc.data();
 
-        let bodyHTML = "";
-        if (d.body) {
-          bodyHTML = d.body.map(p => `<p>${p}</p>`).join("");
-        }
+        let bodyHTML = d.body
+          ? d.body.map(p => `<p>${p}</p>`).join("")
+          : "";
 
-        let bulletsHTML = "";
-        if (d.bullets && d.bullets.length) {
-          bulletsHTML = `
-            <ul>
-              ${d.bullets.map(b => `<li>${b}</li>`).join("")}
-            </ul>
-          `;
-        }
+        let bulletsHTML = d.bullets?.length
+          ? `<ul>${d.bullets.map(b => `<li>${b}</li>`).join("")}</ul>`
+          : "";
 
         awarenessContainer.innerHTML += `
-          <article id="${d.sectionId}">
+          <article>
             <h2 class="section-title">${d.title}</h2>
             ${bodyHTML}
             ${bulletsHTML}
           </article>
         `;
       });
+
+      if (snapshot.empty) {
+        awarenessContainer.innerHTML = "<p>No content found.</p>";
+      }
+
+    })
+    .catch(err => {
+      console.error("Awareness load error:", err);
+      awarenessContainer.innerHTML = "<p>Error loading content.</p>";
     });
 }
 
