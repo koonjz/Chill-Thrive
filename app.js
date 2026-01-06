@@ -464,7 +464,11 @@ const servicesContainer = document.getElementById("servicesContainer");
 const comboContainer = document.getElementById("comboContainer");
 
 // ----- Load Services -----
-db.collection("services").where("active","==",true).onSnapshot(snapshot => {
+db.collection("services")
+  .where("active","==",true)
+  .orderBy("order")
+  .onSnapshot(snapshot => {
+
   if (!servicesContainer) return;
   servicesContainer.innerHTML = "";
 
@@ -509,8 +513,9 @@ async function renderCombos() {
   comboContainer.innerHTML = "";
 
   const snapshot = await db.collection("combos")
-    .where("active","==",true)
-    .get();
+  .where("active","==",true)
+  .orderBy("order")
+  .get();
 
   for (const doc of snapshot.docs) {
     const c = doc.data();
