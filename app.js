@@ -792,7 +792,7 @@ if (awarenessContainer) {
 const founderPhoto = document.getElementById("founderPhoto");
 
 if (founderPhoto) {
-  db.collection("founderContent").doc("main").get()
+  db.collection("founderContent").doc("profile").get()
     .then(doc => {
       if (!doc.exists) return;
 
