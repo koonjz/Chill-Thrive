@@ -823,26 +823,6 @@ if (founderPhoto) {
     .catch(err => console.error("Founder load error:", err));
 }
 
-const quoteBox = document.getElementById("quoteBox");
-
-if (quoteBox) {
-  const page =
-    location.pathname.includes("founder") ? "founder" :
-    location.pathname.includes("awareness") ? "awareness" :
-    "home";
-
-  db.collection("quotes")
-    .where("active","==",true)
-    .where("page","==",page)
-    .limit(1)
-    .onSnapshot(snapshot => {
-      snapshot.forEach(doc => {
-        const q = doc.data();
-        quoteBox.innerHTML = `“${q.text}”`;
-      });
-    });
-}
-
 window.exportBookings = async function () {
 
   const snapshot = await db.collection("bookings")
