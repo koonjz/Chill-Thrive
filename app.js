@@ -788,30 +788,39 @@ if (awarenessContainer) {
     });
 }
 
-const founderContainer = document.getElementById("founderContent");
+// ================= FOUNDER PAGE RENDER =================
+const founderPhoto = document.getElementById("founderPhoto");
 
-if (founderContainer) {
-  db.collection("founder").doc("profile").onSnapshot(doc => {
-    if (!doc.exists) return;
-    const f = doc.data();
+if (founderPhoto) {
+  db.collection("founderContent").doc("main").get()
+    .then(doc => {
+      if (!doc.exists) return;
 
-    founderContainer.innerHTML = `
-      <div class="card">
-        <img src="${f.image}" alt="Founder">
-      </div>
+      const d = doc.data();
 
-      <div class="card">
-        <h3>Founder Story</h3>
-        ${f.story.map(p=>`<p>${p}</p>`).join("")}
+      founderPhoto.src = d.photo;
+      document.getElementById("founderMission").textContent = d.mission;
+      document.getElementById("founderQuote").textContent = d.quote;
 
-        <h3>Mission</h3>
-        <p>${f.mission}</p>
+      // Story
+      const storyDiv = document.getElementById("founderStory");
+      storyDiv.innerHTML = "";
+      d.story.forEach(p => {
+        const para = document.createElement("p");
+        para.textContent = p;
+        storyDiv.appendChild(para);
+      });
 
-        <h3>Core Values</h3>
-        <ul>${f.values.map(v=>`<li>${v}</li>`).join("")}</ul>
-      </div>
-    `;
-  });
+      // Values
+      const valuesUl = document.getElementById("founderValues");
+      valuesUl.innerHTML = "";
+      d.values.forEach(v => {
+        const li = document.createElement("li");
+        li.textContent = v;
+        valuesUl.appendChild(li);
+      });
+    })
+    .catch(err => console.error("Founder load error:", err));
 }
 
 const quoteBox = document.getElementById("quoteBox");
